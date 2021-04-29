@@ -61,7 +61,7 @@ class Influx_management:
         
         
 if __name__ =='__main__':
-    import influx_setting_KETI as ins
+    #from . KETI_setting import influx_setting_KETI as ins
     #dbnames=['INNER_AIR','OUTDOOR_AIR','OUTDOOR_WEATHER']
     #measurement=['KDS1','KDS2','HS1','HS2','sangju']
     

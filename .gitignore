@@ -1,3 +1,6 @@
+influx_data_ingestion/
+*_setting_KETI.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

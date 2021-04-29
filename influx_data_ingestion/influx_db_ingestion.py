@@ -60,21 +60,23 @@ class Influx_management:
              self.client.write_points(result, dbname, protocol=self.protocol )
         return result
     
-
+        
+        
 if __name__ =='__main__':
-    import influx_setting as ins
-    dbnames=['INNER_AIR','OUTDOOR_AIR','OUTDOOR_WEATHER']
-    tables=['KDS1','KDS2','HS1','HS2','sangju']
+    import KETI_influx_setting as ins
+    #dbnames=['INNER_AIR','OUTDOOR_AIR','OUTDOOR_WEATHER']
+    #measurement=['KDS1','KDS2','HS1','HS2','sangju']
     
     time_start='2020-09-10'
     time_end='2020-09-25'
     
-    dbname=dbnames[0]
-    table = tables[3]
+    dbname= "INNER_AIR"
+    table = "HS2"
     
-    print(dbname)
+    print("dbname:",dbname, "table:", table)
     influx_c = Influx_management(ins.host_, ins.port_, ins.user_, ins.pass_, dbname, ins.protocol)
     result = influx_c.get_df_by_time(time_start,time_end,table)
-    print(influx_c.get_start_end_day(result))
+    print(result)
+
 
         

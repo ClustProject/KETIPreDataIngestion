@@ -13,8 +13,6 @@ class Influx_management:
         self.protocol = protocol
         self.table = dbname if(table == "") else table
     
-    def get_all_db_list(self):
-        return self.client.get_list_database()
         
     def get_df_by_time(self, time_start, time_end, table):
         
@@ -63,15 +61,15 @@ class Influx_management:
         
         
 if __name__ =='__main__':
-    import KETI_influx_setting as ins
+    import influx_setting_KETI as ins
     #dbnames=['INNER_AIR','OUTDOOR_AIR','OUTDOOR_WEATHER']
     #measurement=['KDS1','KDS2','HS1','HS2','sangju']
     
     time_start='2020-09-10'
-    time_end='2020-09-25'
+    time_end='2021-09-25'
     
     dbname= "INNER_AIR"
-    table = "HS2"
+    table = "HS1"
     
     print("dbname:",dbname, "table:", table)
     influx_c = Influx_management(ins.host_, ins.port_, ins.user_, ins.pass_, dbname, ins.protocol)

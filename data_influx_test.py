@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
-from KETI_setting import influx_setting_KETI as ins
 from influxdb import InfluxDBClient, DataFrameClient
 
-from influx_data_ingestion import influx_db_ingestion as ing
+from KETI_setting import influx_setting_KETI as ins
+from data_influx import measurement_ingestion as ing
 
        
 def test1():
@@ -28,9 +28,11 @@ def test2():
     client = InfluxDBClient(host = ins.host_, port= ins.port_, username = ins.user_,  verify_ssl=True)
     db_list = client.get_list_database()
 
-    d2 = [list(item.values())[0] for item in db_list]
-    print (d2)
+    db_list = [list(item.values())[0] for item in db_list]
+    return db_list
 
 if __name__ =='__main__':
-    test1()
-    test2()
+    
+    db_list = test2()
+    print(db_list)
+    test1() 

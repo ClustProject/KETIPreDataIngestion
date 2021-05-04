@@ -9,7 +9,7 @@ from data_influx import measurement_ingestion as ing
 def test1(db_name, measurement, time_start, time_end):
     
     print("dbname:",db_name, "table:", measurement)
-    influx_c = ing.Influx_management(ins.host_, ins.port_, ins.user_, ins.pass_, db_namedk s, ins.protocol)
+    influx_c = ing.Influx_management(ins.host_, ins.port_, ins.user_, ins.pass_, db_name, ins.protocol)
     result = influx_c.get_df_by_time(time_start,time_end,measurement)
     print(result)
 

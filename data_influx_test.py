@@ -3,8 +3,8 @@ import pandas as pd
 from influxdb import InfluxDBClient, DataFrameClient
 
 from KETI_setting import influx_setting_KETI as ins
-from data_influx import measurement_ingestion as ing
-
+from data_influx import ingestion_measurement as ing
+from data_influx import ingestion_partial_dataset as ipd
        
 def test1(db_name, measurement, time_start, time_end):
     
@@ -32,10 +32,17 @@ if __name__ =='__main__':
     #dbnames=['INNER_AIR','OUTDOOR_AIR','OUTDOOR_WEATHER']
     #measurement=['KDS1','KDS2','HS1','HS2','sangju']
 
-    time_start='2020-09-10'
-    time_end='2021-09-25'
+    start='2020-09-10'
+    end='2021-09-25'
     
     db_name= "INNER_AIR"
     measurement = "HS1"
     
-    test1(db_name, measurement, time_start, time_end) 
+    test1(db_name, measurement, start, end) 
+    ###
+    influx_parameter = ins
+    intDataInfo = {"db_info":
+                   [{"db_name":"INNER_AIR","measurement":"HS1","domain":"farm","subdomain":"airQuality","start":str(start),"end":str(end)},
+                 {"db_name":"OUTDOOR_AIR","measurement":"sangju","domain":"city","subdomain":"airQuality","start":str(start),"end":str(end)},
+                 {"db_name":"OUTDOOR_WEATHER","measurement":"sangju","domain":"city","subdomain":"weather","start":str(start),"end":str(end)}]}
+    result = ipd.partial_dataSet_ingestion(intDataInfo, influx_parameter)

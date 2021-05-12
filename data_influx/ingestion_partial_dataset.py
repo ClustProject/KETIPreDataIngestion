@@ -1,4 +1,4 @@
-from KETI_pre_dataIngestion.data_influx import ingestion_measurement as ing
+from KETIPreDataIngestion.data_influx import ingestion_measurement as ing
 
 def partial_dataSet_ingestion(intDataInfo, influx_parameter):
     

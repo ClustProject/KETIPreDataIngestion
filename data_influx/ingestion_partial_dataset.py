@@ -9,8 +9,13 @@ def partial_dataSet_ingestion(intDataInfo, influx_parameter):
         measurement = dbinfo['measurement']
         ing_start= dbinfo['start']
         ing_end = dbinfo['end']
+        ing_frequency = dbinfo['frequency']
         influx_c = ing.Influx_management(influx_parameter.host_, influx_parameter.port_, influx_parameter.user_, influx_parameter.pass_, db_name, influx_parameter.protocol)
         result[i] = influx_c.get_df_by_time(ing_start,ing_end,measurement)
+        
+        # make timestamp
+        if ing_frequency !=None:
+            result[i] = result[i].resample(ing_frequency).mean()
         result[i].index.name ='datetime'
         
     return result

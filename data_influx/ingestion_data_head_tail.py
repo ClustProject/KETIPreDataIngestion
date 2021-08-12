@@ -50,16 +50,24 @@ sys.path.append("..")
 # print(DBheadtail.data_tail())
 
 import requests
-from influxdb_client import InfluxDBClient
-test = InfluxDBClient(url='http://52.231.185.8:8086', token='pB1ZFiugRNTP8ukSPcmNcouT-JJTbujsPt10ARTj_uSAcKMTBQbbvJaVcCh9dB0TG5X8Z5B1e2xBnB-EkPhXmw==', org='test')
-URL = 'http://52.231.185.8:8086/query?db=test' 
+#test = InfluxDBClient(url='http://52.231.185.8:8086', token='pB1ZFiugRNTP8ukSPcmNcouT-JJTbujsPt10ARTj_uSAcKMTBQbbvJaVcCh9dB0TG5X8Z5B1e2xBnB-EkPhXmw==', org='test')
+#URL = 'http://52.231.185.8:8086/query?db=Energy_Solar'
+URL = 'http://52.231.185.8:8086/query' 
 headers = {'Authorization': 'Token pB1ZFiugRNTP8ukSPcmNcouT-JJTbujsPt10ARTj_uSAcKMTBQbbvJaVcCh9dB0TG5X8Z5B1e2xBnB-EkPhXmw==',
-'Accept': 'application/csv','Content-Type': 'application/json;'}
+            'Accept': 'application/csv','Content-Type': 'application/json;'}
+
+# data = {
+#    'q': 'SHOW DATABASES'
+#  }
 
 data = {
   'q': 'SELECT * FROM test.infinite.mem LIMIT 3'
-}
+} # database.rp.measurement
+
+# data = {
+#   'q': 'SELECT * FROM Jeju LIMIT 3'
+# }
 response = requests.get(URL,headers=headers, params=data)
 print(response.text)
-print(response)
-print(response.status_code)
+# print(response)
+# print(response.status_code)

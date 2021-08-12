@@ -6,7 +6,6 @@ import influxdb
 from influxdb import InfluxDBClient, DataFrameClient
 import pandas as pd
 
-#from KETI_pre_dataIngestion.data_influx import ingestion_measurement as ing
 from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
 
 # exploration_df = pd.DataFrame()

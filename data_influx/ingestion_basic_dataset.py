@@ -3,10 +3,8 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from requests.api import head
-import influxdb
 from influxdb import InfluxDBClient, DataFrameClient
 import pandas as pd
-
 
 class BasicDatasetRead():
     def __init__(self, influx_setting, db_name, measurement_name):
@@ -20,17 +18,32 @@ class BasicDatasetRead():
         query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
         #select * from HS1 where time >= '2020-09-10T00:36:00Z' and time <= '2020-09-10T01:36:00Z
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
         return df
 
     def get_datafront_by_num(self, number):
         query_string = "SELECT * FROM " + self.ms_name +" LIMIT "+ number +""
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
         return df
 
     def get_dataend_by_num(self, number):
         query_string = "SELECT * FROM " + self.ms_name +" ORDER BY DESC LIMIT "+ number +""
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
-        return df.sort_index(ascending=False)
+        df = self.cleanup_df(df)
+        return df
+
+    def cleanup_df(self, df):
+        import numpy as np
+        df = df.set_index('time')
+        df = df.groupby(df.index).first()
+        df.index = pd.to_datetime(df.index)#).astype('int64'))
+        df = df.drop_duplicates(keep='first')
+        df = df.sort_index(ascending=False)
+        df.replace("", np.nan, inplace=True)
+
+        return df
+
 
 
 from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins

@@ -24,7 +24,8 @@ class DatabaseMeasurementList():
             measurement_list.append(self.influxdb.get_list_measurements()[num]['name'])
         return measurement_list 
 
-from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-test = DatabaseMeasurementList(ins)
-print(test.database_list())
-print(test.measurement_list('INNER_AIR'))
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = DatabaseMeasurementList(ins)
+    print(test.database_list())
+    print(test.measurement_list('INNER_AIR'))

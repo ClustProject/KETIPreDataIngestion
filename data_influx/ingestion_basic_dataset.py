@@ -16,9 +16,13 @@ class BasicDatasetRead():
         self.influxdb = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
         self.influxdb.switch_database(self.db_name)
     
+    def get_data(self):
+        query_string = "select * from "+self.ms_name+""
+        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        return df
+
     def get_data_by_time(self, start_time, end_time):
         query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
-        #select * from HS1 where time >= '2020-09-10T00:36:00Z' and time <= '2020-09-10T01:36:00Z
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         return df
 
@@ -34,17 +38,16 @@ class BasicDatasetRead():
 
     def get_datafront_by_duration(self, start_time, end_time):
         query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
-        #select * from HS1 where time >= '2020-09-10T00:36:00Z' and time <= '2020-09-10T01:36:00Z
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         return df
 
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = BasicDatasetRead(ins, 'INNER_AIR', 'HS1')
 
-from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-test = BasicDatasetRead(ins, 'INNER_AIR', 'HS1')
-
-print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
-print(test.get_datafront_by_num('5'))
-print(test.get_dataend_by_num('5'))
+    print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
+    print(test.get_datafront_by_num('5'))
+    print(test.get_dataend_by_num('5'))
 
 
 

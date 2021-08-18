@@ -17,6 +17,7 @@ class BasicDatasetRead():
     def get_data(self):
         query_string = "select * from "+self.ms_name+""
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
         return df
 
     def get_data_by_time(self, start_time, end_time):
@@ -43,9 +44,9 @@ class BasicDatasetRead():
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))
         df = df.drop_duplicates(keep='first')
-        df = df.sort_index(ascending=False)
+        df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
-
+       
         return df
 
 
@@ -58,9 +59,9 @@ if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = BasicDatasetRead(ins, 'INNER_AIR', 'HS1')
 
-    print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
-    print(test.get_datafront_by_num('5'))
-    print(test.get_dataend_by_num('5'))
+    #print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
+    #print(test.get_datafront_by_num('5'))
+    #print(test.get_dataend_by_num('5'))
 
 
 

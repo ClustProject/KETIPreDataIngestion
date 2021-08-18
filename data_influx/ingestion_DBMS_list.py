@@ -27,5 +27,5 @@ class DatabaseMeasurementList():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = DatabaseMeasurementList(ins)
-    print(test.database_list())
-    print(test.measurement_list('INNER_AIR'))
+    #print(test.database_list())
+    #print(test.measurement_list('INNER_AIR'))

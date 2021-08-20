@@ -56,12 +56,15 @@ class BasicDatasetRead():
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = BasicDatasetRead(ins, 'INNER_AIR', 'HS1')
+    test = BasicDatasetRead(ins, 'air_outdoor', 'V02Q1941015')
 
-    print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
-    print(test.get_datafront_by_num('5'))
-    print(test.get_dataend_by_num('5'))
+    #print(test.get_data_by_time('2020-09-10T00:36:00Z', '2020-09-10T01:36:00Z'))
+    #print(test.get_datafront_by_num('5'))
+    #print(test.get_dataend_by_num('5'))
 
+    df = test.get_data()
+    print(df)
+    print(df.info())
 
 
 

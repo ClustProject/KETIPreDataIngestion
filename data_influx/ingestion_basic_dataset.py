@@ -40,15 +40,23 @@ class BasicDatasetRead():
 
     def cleanup_df(self, df):
         import numpy as np
-        df = df.set_index('time')
+        if 'time' in df.columns:
+            df = df.set_index('time')
+        elif 'datetime' in df.columns:
+            df = df.set_index('datetime')
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))
         df = df.drop_duplicates(keep='first')
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
-       
-        return df
 
+        return df
+    """ 
+    def get_features(self):
+        query_string = "SHOW FIELD KEYS ON "+ self.db_name+ " FROM " + self.ms_name
+        features = self.influxdb.query(query_string)['result']
+        return features
+    """
 
     def get_datafront_by_duration(self, start_time, end_time):
         query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 

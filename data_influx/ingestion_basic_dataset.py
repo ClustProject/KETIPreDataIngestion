@@ -14,15 +14,31 @@ class BasicDatasetRead():
         self.influxdb = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
         self.influxdb.switch_database(self.db_name)
     
+    def get_first_data(self):
+        query_string = "select * from "+self.ms_name+""+" ORDER BY ASC LIMIT 1"
+        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
+        return df
+
+    def get_last_data(self):
+        query_string = "select * from "+self.ms_name+""+" ORDER BY DESC LIMIT 1"
+        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
+
+        return df
     def get_data(self):
         query_string = "select * from "+self.ms_name+""
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
-    def get_data_by_time(self, start_time, end_time):
+    def get_data_by_time(self, bind_params):
+        """
         query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        """
+        query_string = "select * from "+self.ms_name+" where time >= $start_time and time < $end_time"
+        df = pd.DataFrame(self.influxdb.query(query_string, bind_params = bind_params).get_points())
         df = self.cleanup_df(df)
         return df
 
@@ -72,8 +88,7 @@ if __name__ == "__main__":
     #print(test.get_dataend_by_num('5'))
 
     df = test.get_data()
-    print(df)
-    print(df.info())
+
 
 
 

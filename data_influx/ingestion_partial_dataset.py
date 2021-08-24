@@ -11,10 +11,10 @@ def partial_dataSet_ingestion(intDataInfo, influx_parameter):
     for i, dbinfo in enumerate(intDataInfo['db_info']):
         db_name = dbinfo['db_name']
         measurement = dbinfo['measurement']
-        ing_start= dbinfo['start']
-        ing_end = dbinfo['end']
+
         influx_c = ibd.BasicDatasetRead(influx_parameter, db_name, measurement)
-        result[i] = influx_c.get_data_by_time(ing_start, ing_end)        
+        bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
+        result[i] = influx_c.get_data_by_time(bind_params)        
 
         result[i].index.name ='datetime'
         

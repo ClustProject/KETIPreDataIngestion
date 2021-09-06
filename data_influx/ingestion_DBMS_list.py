@@ -22,10 +22,19 @@ class DatabaseMeasurementList():
         self.influxdb.switch_database(db_name)
         for num in range(len(self.influxdb.get_list_measurements())):
             measurement_list.append(self.influxdb.get_list_measurements()[num]['name'])
-        return measurement_list 
+        return measurement_list
+
+    def feature_list(self, db_name, ms_name):
+        self.influxdb.switch_database(db_name)
+        query_string = "SHOW FIELD KEYS"
+        fieldkeys = list(self.influxdb.query(query_string).get_points(measurement=ms_name))
+        fieldkey = list(x['fieldKey'] for x in fieldkeys)
+        return fieldkey
+
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = DatabaseMeasurementList(ins)
     #print(test.database_list())
     #print(test.measurement_list('INNER_AIR'))
+    print(test.feature_list('INNER_AIR', 'HS1'))

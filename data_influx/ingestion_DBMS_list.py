@@ -29,6 +29,7 @@ class DatabaseMeasurementList():
         query_string = "SHOW FIELD KEYS"
         fieldkeys = list(self.influxdb.query(query_string).get_points(measurement=ms_name))
         fieldkey = list(x['fieldKey'] for x in fieldkeys)
+        print(fieldkey)
         return fieldkey
 
 
@@ -37,4 +38,4 @@ if __name__ == "__main__":
     test = DatabaseMeasurementList(ins)
     #print(test.database_list())
     #print(test.measurement_list('INNER_AIR'))
-    print(test.feature_list('INNER_AIR', 'HS1'))
+    print(test.feature_list('OUTDOOR_AIR', 'seoul'))

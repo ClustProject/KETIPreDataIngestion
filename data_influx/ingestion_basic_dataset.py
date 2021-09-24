@@ -34,8 +34,8 @@ class BasicDatasetRead():
 
     def get_data_by_time(self, bind_params):
         """
-        query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
-        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
+        'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
         """
         query_string = "select * from "+self.ms_name+" where time >= $start_time and time < $end_time"
         df = pd.DataFrame(self.influxdb.query(query_string, bind_params = bind_params).get_points())

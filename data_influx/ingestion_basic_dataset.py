@@ -54,6 +54,12 @@ class BasicDatasetRead():
         df = self.cleanup_df(df)
         return df
 
+    def get_datafront_by_duration(self, start_time, end_time):
+        query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
+        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
+        df = self.cleanup_df(df)
+        return df
+
     def cleanup_df(self, df):
         import numpy as np
         if 'time' in df.columns:
@@ -66,17 +72,6 @@ class BasicDatasetRead():
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
 
-        return df
-    """ 
-    def get_features(self):
-        query_string = "SHOW FIELD KEYS ON "+ self.db_name+ " FROM " + self.ms_name
-        features = self.influxdb.query(query_string)['result']
-        return features
-    """
-
-    def get_datafront_by_duration(self, start_time, end_time):
-        query_string = "select * from "+self.ms_name+" where time >= '"+start_time+"' and time <= '"+end_time+"'" 
-        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         return df
 
 if __name__ == "__main__":

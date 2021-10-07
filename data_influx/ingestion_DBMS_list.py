@@ -30,11 +30,15 @@ class DatabaseMeasurementList():
         measurement_list = []
         self.influxdb.switch_database(db_name)
         ori_ms_list=self.influxdb.get_list_measurements()
-        if(len(ori_ms_list)==1):
+        ori_len = len(ori_ms_list)
+        if(ori_len==1):
             measurement_list.append(ori_ms_list[0]['name'])
-        elif(len(ori_ms_list)>1):
+        elif(ori_len==2):
             measurement_list.append(ori_ms_list[0]['name'])
-            measurement_list.append("...")
+            measurement_list.append(ori_ms_list[len(ori_ms_list)-1]['name'])
+        elif(ori_len>2):
+            measurement_list.append(ori_ms_list[0]['name'])
+            measurement_list.append("...(+"+str(ori_len-2)+")")
             measurement_list.append(ori_ms_list[len(ori_ms_list)-1]['name'])
         return measurement_list
 

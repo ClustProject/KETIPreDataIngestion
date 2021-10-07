@@ -13,15 +13,28 @@ class DatabaseMeasurementList():
 
     def database_list(self):
         db_list = []
-        for num in range(1,len(self.influxdb.get_list_database())):
-            db_list.append(self.influxdb.get_list_database()[num]['name'])
+        ori_db_list = self.influxdb.get_list_database()
+        for num in range(1,len(ori_db_list)):
+            db_list.append(ori_db_list[num]['name'])
         return db_list
     
     def measurement_list(self, db_name):
         measurement_list = []
         self.influxdb.switch_database(db_name)
-        for num in range(len(self.influxdb.get_list_measurements())):
-            measurement_list.append(self.influxdb.get_list_measurements()[num]['name'])
+        ori_ms_list=self.influxdb.get_list_measurements()
+        for num in range(len(ori_ms_list)):
+            measurement_list.append(ori_ms_list[num]['name'])
+        return measurement_list
+
+    def measurement_list_only_start_end(self, db_name):
+        measurement_list = []
+        self.influxdb.switch_database(db_name)
+        ori_ms_list=self.influxdb.get_list_measurements()
+        if(len(ori_ms_list)==1):
+            measurement_list.append(ori_ms_list[0]['name'])
+        elif(len(ori_ms_list)>1):
+            measurement_list.append(ori_ms_list[0]['name'])
+            measurement_list.append(ori_ms_list[len(ori_ms_list)-1]['name'])
         return measurement_list
 
     def feature_list(self, db_name, ms_name):

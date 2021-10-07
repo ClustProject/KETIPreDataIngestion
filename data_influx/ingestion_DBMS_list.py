@@ -34,6 +34,7 @@ class DatabaseMeasurementList():
             measurement_list.append(ori_ms_list[0]['name'])
         elif(len(ori_ms_list)>1):
             measurement_list.append(ori_ms_list[0]['name'])
+            measurement_list.append("...")
             measurement_list.append(ori_ms_list[len(ori_ms_list)-1]['name'])
         return measurement_list
 

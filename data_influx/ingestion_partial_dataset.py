@@ -20,8 +20,3 @@ def partial_dataSet_ingestion(intDataInfo, influx_parameter):
         
     return result
 
-intdatainfo = { "db_info":[ { "db_name":"INNER_AIR", "measurement":"HS1", "start":"2020-09-11 00:00:00", "end":"2020-10-18 00:00:00" }, 
-{ "db_name":"OUTDOOR_AIR", "measurement":"sangju", "start":"2020-09-11 00:00:00", "end":"2020-10-18 00:00:00" }, 
-{ "db_name":"OUTDOOR_WEATHER", "measurement":"sangju", "start":"2020-09-11 00:00:00", "end":"2020-10-18 00:00:00" } ] }
-
-#print(partial_dataSet_ingestion(intdatainfo, ins))

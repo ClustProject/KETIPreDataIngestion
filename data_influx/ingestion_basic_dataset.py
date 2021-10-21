@@ -24,8 +24,8 @@ class BasicDatasetRead():
         query_string = "select * from "+self.ms_name+""+" ORDER BY DESC LIMIT 1"
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         df = self.cleanup_df(df)
-
         return df
+
     def get_data(self):
         query_string = "select * from "+self.ms_name+""
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
@@ -40,6 +40,16 @@ class BasicDatasetRead():
         print(self.ms_name)
         query_string = "select * from "+self.ms_name+" where time >= $start_time and time < $end_time"
         df = pd.DataFrame(self.influxdb.query(query_string, bind_params = bind_params).get_points())
+        df = self.cleanup_df(df)
+        return df
+
+    def get_data_by_days(self, bind_params):
+        """
+        bind_params = {'end_time': 1615991400000, 
+        'days': '7d"}
+        """
+        query_string = "select * from "+self.ms_name+' where time >= '+bind_params["end_time"]+' - '+bind_params["days"]
+        df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
@@ -60,8 +70,6 @@ class BasicDatasetRead():
         df = pd.DataFrame(self.influxdb.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
-
-    
 
     def cleanup_df(self, df):
         import numpy as np

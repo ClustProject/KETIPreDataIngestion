@@ -1,23 +1,17 @@
+Data Ingestion Packages
 
-==== Test ====================================================
-# KETI_pre_dataIngestion
-
-- data_influx_test: ingestion test code from influx DB
+* CLUST Data Rule (influx DB)
+- DB Name = mainDomainName_subDomainNmae
+- Measurement Name = Unique_Description of data
 
 ==== Packages ================================================
-
 # data_influx
-
-- info_influx: get influx db information
-- info_db: get db information by influx db name
-- ingestion_measurement: data ingestion from multiple sources such as influxDB, and CSV files
-
+- This package get DB and Measurement data and information
 
 # data_document
 - data_csv : get data from csv by local address
 - data_json: get data from json by local address
 
 # KETI_setting
-
-Store the local setting information
-- influx_setting_KETI: KETI influx DB information
+- It includes Data and corresponding MetaData information.
+- We do not upload this information for the private issue.

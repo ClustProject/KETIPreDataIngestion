@@ -114,7 +114,7 @@ class influxMeasurement():
         """
         Get the first data of the specific mearuement
         """
-        query_string = "select * from "+self.ms_name+""+" ORDER BY ASC LIMIT 1"
+        query_string = 'select * from "'+self.ms_name+''+'" ORDER BY DESC LIMIT 1'
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -123,7 +123,7 @@ class influxMeasurement():
         """
         Get the last data of the specific mearuement
         """
-        query_string = "select * from "+self.ms_name+""+" ORDER BY DESC LIMIT 1"
+        query_string = 'select * from "'+self.ms_name+''+'" ORDER BY DESC LIMIT 1'
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -157,7 +157,7 @@ class influxMeasurement():
         ex> bind_param example
         bind_params = {'end_time': 1615991400000, 'days': '7d"}
         """
-        query_string = "select * from "+self.ms_name+' where time >= '+bind_params["end_time"]+' - '+bind_params["days"]
+        query_string = 'select * from "'+self.ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

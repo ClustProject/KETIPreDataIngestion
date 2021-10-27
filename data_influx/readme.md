@@ -1,6 +1,6 @@
-# 1) influx_Clinet
+# influx_Clinet
 
-# class influcClient
+## class influcClient
 - basic influx DB connection
 
 ```
@@ -9,30 +9,30 @@ getDBList:
 - remove the 1st useless name (defalut information)
 ```
 
-# class influxDB
-- explore the specific database DB with switching database name.
-- switch database based on influxClient and the db name
+### DB Information
 
 ```
 measurement_list:
+- explore the specific database DB with switching database name.
+- switch database based on influxClient and the db name
 - get all measurement list related to the db
 ```
 ```
 measurement_list_only_start_end:
-- Get the only start and end measurement name
-- Use this function to reduce the DB load time.
+- Get the only start and end measurement name, and add the number of ms
+- Use this function to reduce the DB load time for visualization.
 ```
 
-# class influxMeasurementSet
--This class get multiple influx measurement information.
+### Measurement Set
+
 ```
 get_MeasurementDataSet:
 - Get measurement Data Set according to the dbinfo
 - Each function makes dataframe output with "timedate" index.
+-This class get multiple influx measurement information.
 ```
 
-# class influxMeasurement
-- Get the specific measurement data and information.
+#### Individual Measurement
 
 ```
 get_fieldList:

@@ -1,6 +1,6 @@
 ###
-## Define your own Data and MetaData DB information.
-## and make influ_setting_KETI.py file under KETI_setting folder.
+Define your own Data and MetaData DB information.
+and make influ_setting_KETI.py file under KETI_setting folder.
 
 # It shouold include data DB info.
 # we are currently using influx DB.

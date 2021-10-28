@@ -1,10 +1,9 @@
 ###
-## Define your own Data and MetaData DB information.
-## and make influ_setting_KETI.py file under KETI_setting folder.
-
-# It shouold include data DB info.
-# we are currently using influx DB.
-
+# Define your own Data and MetaData DB information.
+- make influ_setting_KETI.py file under KETI_setting folder.
+- It shouold include data DB info.
+- we are currently using influx DB as DATABASE.
+# Influx DB Description Example
 ```json
 host_='X.X.X>X'
 port_= XXXX
@@ -13,9 +12,10 @@ pass_='PASSWORD'
 protocol ='line'
 ```
 
-## And it also should include metadata config information
-# We are currently using mongo DB.
+- It also should include metadata config information
+- We are currently using mongo DB as the meta DB.
 
+# Mongo DB Description Example
 ```json
 {
     "DB_INFO":{

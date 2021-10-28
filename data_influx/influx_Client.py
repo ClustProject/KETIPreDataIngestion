@@ -154,7 +154,9 @@ class influxClient():
         bind_params = {'end_time': 1615991400000, 'days': '7d"}
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
+        #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
+        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+bind_params["end_time"]+"'"+" - "+bind_params["days"]
+        print(query_string) # 삭제 요망
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

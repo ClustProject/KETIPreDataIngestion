@@ -4,7 +4,6 @@ Data Ingestion Packages
 - DB Name = mainDomainName_subDomainNmae
 - Measurement Name = Unique_Description of data
 
-==== Packages ================================================
 # data_influx
 - This package get DB and Measurement data and information
 
@@ -14,4 +13,4 @@ Data Ingestion Packages
 
 # KETI_setting
 - It includes Data and corresponding MetaData information.
-- We do not upload this information for the private issue.
+- We do not upload this information due to privacy concerns.

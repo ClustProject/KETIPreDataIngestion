@@ -107,7 +107,7 @@ class influxClient():
         Get the first data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+''+'" ORDER BY DESC LIMIT 1'
+        query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

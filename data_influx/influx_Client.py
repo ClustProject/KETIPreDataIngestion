@@ -102,25 +102,29 @@ class influxClient():
 
         return fieldList
 
-    def get_first_data(self, db_name, ms_name):
+    def get_first_time(self, db_name, ms_name):
         """
         Get the first data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        df = self.cleanup_df(df)
-        return df
+        first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(first)
+        first_time = first.index[0]
+        #df = self.cleanup_df(df)
+        return first_time
 
-    def get_last_data(self, db_name, ms_name):
+    def get_last_time(self, db_name, ms_name):
         """
         Get the last data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" ORDER BY DESC LIMIT 1'
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        df = self.cleanup_df(df)
-        return df
+        last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(last)
+        #df = self.cleanup_df(df)
+        last_time = last.index[0]
+        return last_time
 
     def get_data(self,db_name, ms_name):
         """
@@ -156,7 +160,6 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
         query_string = 'select * from "'+ms_name+'" where time >= '+"'"+bind_params["end_time"]+"'"+" - "+bind_params["days"]
-        print(query_string) # 삭제 요망
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

@@ -102,39 +102,47 @@ class influxClient():
 
         return fieldList
 
-    def get_first_data(self, db_name, ms_name):
+    def get_first_time(self, db_name, ms_name):
         """
         Get the first data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+''+'" ORDER BY DESC LIMIT 1'
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        df = self.cleanup_df(df)
-        return df
+        query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
+        first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(first)
+        first_time = first.index[0]
+        #df = self.cleanup_df(df)
+        return first_time
 
-    def get_last_data(self, db_name, ms_name):
+    def get_last_time(self, db_name, ms_name):
         """
         Get the last data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" ORDER BY DESC LIMIT 1'
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        df = self.cleanup_df(df)
-        return df
+        last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(last)
+        #df = self.cleanup_df(df)
+        last_time = last.index[0]
+        return last_time
 
     def get_data(self,db_name, ms_name):
         """
         Get all data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
+<<<<<<< HEAD
         query_string = "select * from "+'"'+ms_name+'"'+""
+=======
+        query_string = 'select * from "'+ms_name+'"'
+>>>>>>> 8b0df1c04ce2ce7c997a5f61643842b919e39bb1
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
     def get_data_by_time(self, bind_params, db_name, ms_name):
         """
-        Get data of the specific mearuement based on start-end duration
+        Get data of the specific measurement based on start-end duration
         # get_datafront_by_duration(self, start_time, end_time)
         ex> bind_params example
         bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
@@ -154,7 +162,8 @@ class influxClient():
         bind_params = {'end_time': 1615991400000, 'days': '7d"}
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
+        #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
+        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+bind_params["end_time"]+"'"+" - "+bind_params["days"]
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

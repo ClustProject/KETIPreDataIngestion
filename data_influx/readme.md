@@ -39,13 +39,13 @@ get_fieldList:
 - Get all feature(field) list of the specific measurement.
 ```
 ```
-get_first_data:
-- Get the first data of the specific mearuement
+get_first_time:
+- Get the first data time of the specific mearuement
 ```
 
 ```
-get_last_data:
-- Get the last data of the specific mearuement
+get_last_time:
+- Get the last data time of the specific mearuement
 ```
 
 ```

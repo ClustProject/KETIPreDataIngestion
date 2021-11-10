@@ -97,7 +97,7 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW FIELD KEYS"
-        fieldkeys = list(self.DBClient.query(query_string).get_points(measurement='"'+ms_name+'"'))
+        fieldkeys = list(self.DBClient.query(query_string).get_points(measurement=ms_name))
         fieldList = list(x['fieldKey'] for x in fieldkeys)
 
         return fieldList

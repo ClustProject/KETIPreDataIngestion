@@ -174,7 +174,7 @@ class influxClient():
         Get the first N number data from the specific measurement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = "SELECT * FROM " + ms_name +" LIMIT "+ number +""
+        query_string = "SELECT * FROM " + ms_name +" LIMIT "+ str(number) +""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -205,3 +205,9 @@ class influxClient():
         df.replace("", np.nan, inplace=True)
 
         return df
+
+    def get_freq(self, db_name, ms_name):
+        data = self.get_datafront_by_num(10,db_name, ms_name)
+        from KETIPrePartialDataPreprocessing.data_cleaning.data_refine import RefineData
+        print(RefineData().get_frequency(data))
+        return {"freq" : str(RefineData().get_frequency(data))}

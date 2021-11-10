@@ -119,7 +119,7 @@ class influxClient():
         Get the last data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+''+'" ORDER BY DESC LIMIT 1'
+        query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         print(last)
         #df = self.cleanup_df(df)
@@ -145,7 +145,7 @@ class influxClient():
         'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
         """
         self.switch_MS(db_name, ms_name)
-        query_string = "select * from "+ms_name+" where time >= $start_time and time < $end_time"
+        query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
         df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
         df = self.cleanup_df(df)
         return df
@@ -170,7 +170,7 @@ class influxClient():
         Get the first N number data from the specific measurement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = "SELECT * FROM " + ms_name +" LIMIT "+ str(number) +""
+        query_string = 'SELECT * FROM "' + ms_name +'" LIMIT '+ str(number) +""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -180,7 +180,7 @@ class influxClient():
         Get the last N number data from the specific measurement
         """
         self.switch_MS(db_name, ms_name)
-        query_string = "SELECT * FROM " + ms_name +" ORDER BY DESC LIMIT "+ number +""
+        query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

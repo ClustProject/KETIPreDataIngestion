@@ -131,11 +131,7 @@ class influxClient():
         Get all data of the specific mearuement
         """
         self.switch_MS(db_name, ms_name)
-<<<<<<< HEAD
         query_string = "select * from "+'"'+ms_name+'"'+""
-=======
-        query_string = 'select * from "'+ms_name+'"'
->>>>>>> 8b0df1c04ce2ce7c997a5f61643842b919e39bb1
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df

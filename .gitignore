@@ -288,6 +288,12 @@ cython_debug/
 # Local History for Visual Studio Code
 .history/
 
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history

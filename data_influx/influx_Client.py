@@ -7,6 +7,13 @@ import pandas as pd
 class influxClient():
     """
     basic influx DB connection
+    docstring::
+
+        code box test
+
+    
+    ``코드 박스`` 테스트중
+
     """
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
@@ -129,6 +136,35 @@ class influxClient():
     def get_data(self,db_name, ms_name):
         """
         Get all data of the specific mearuement
+        """
+        """
+        지정한  measurement의 ``모든 data`` 가져오기
+        docstring::
+
+            from influxdb import InfluxDBClient
+
+            self.switch_MS(db_name, ms_name)
+            query_string = "select * from "+'"'+ms_name+'"'+""
+            df = pd.DataFrame(self.DBClient.query(query_string).get_points())
+            df = self.cleanup_df(df)
+            
+            return df
+        
+
+
+        :param db_name: ``database name``
+        :type db_name: string
+        :param ms_name: ``measurement name``
+        :type ms_name: string
+
+               
+        :returns: dataframe으로 가져온 data저장
+        
+        :rtype: tuple
+        
+        :raises ValueError: When ``a`` is not an integer.
+
+
         """
         self.switch_MS(db_name, ms_name)
         query_string = "select * from "+'"'+ms_name+'"'+""

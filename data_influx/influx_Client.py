@@ -240,6 +240,5 @@ class influxClient():
 
     def get_freq(self, db_name, ms_name):
         data = self.get_datafront_by_num(10,db_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_cleaning.data_refine import RefineData
-        print(RefineData().get_frequency(data))
-        return {"freq" : str(RefineData().get_frequency(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
+        return {"freq" : str(FrequencyRefine(data).get_inferred_freq())}

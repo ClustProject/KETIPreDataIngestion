@@ -3,16 +3,17 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from influxdb import InfluxDBClient
 import pandas as pd
-
 class influxClient():
     """
     basic influx DB connection
-
+    docstring::
+        code box test
+    
+    ``코드 박스`` 테스트중
     """
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
         self.DBClient = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
-
     def get_DBList(self):
         """
         get all db List according to the influx setting
@@ -23,13 +24,10 @@ class influxClient():
         for num in range(1,len(ori_db_list)):
             db_list.append(ori_db_list[num]['name'])
         return db_list
-
 ##### DB Function
-
     def switch_DB(self, db_name):
         """
         Before explore the specific DB, Switch DB.
-
         """
         self.db_name = db_name 
         self.DBClient.switch_database(self.db_name)        
@@ -44,7 +42,6 @@ class influxClient():
         for num in range(len(ori_ms_list)):
             measurement_list.append(ori_ms_list[num]['name'])
         return measurement_list
-
     def measurement_list_only_start_end(self, db_name):
         """
         Get the only start and end measurement name
@@ -65,12 +62,10 @@ class influxClient():
             measurement_list.append(ori_ms_list[len(ori_ms_list)-1]['name'])
         return measurement_list
 ##### MS Set Function
-
     def get_MeasurementDataSet(self, intDataInfo):
         """
         Get measurement Data Set according to the dbinfo
         Each function makes dataframe output with "timedate" index.
-
         """
         MSdataSet ={}
         for i, dbinfo in enumerate(intDataInfo['db_info']):
@@ -80,9 +75,7 @@ class influxClient():
             bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
             MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
             MSdataSet[i].index.name ='datetime'
-
         return MSdataSet
-
     ##### MS Function
     def switch_MS(self, db_name, ms_name):
         """
@@ -100,9 +93,7 @@ class influxClient():
         query_string = "SHOW FIELD KEYS"
         fieldkeys = list(self.DBClient.query(query_string).get_points(measurement=ms_name))
         fieldList = list(x['fieldKey'] for x in fieldkeys)
-
         return fieldList
-
     def get_first_time(self, db_name, ms_name):
         """
         Get the first data of the specific mearuement
@@ -114,7 +105,6 @@ class influxClient():
         first_time = first.index[0]
         #df = self.cleanup_df(df)
         return first_time
-
     def get_last_time(self, db_name, ms_name):
         """
         Get the last data of the specific mearuement
@@ -126,17 +116,37 @@ class influxClient():
         #df = self.cleanup_df(df)
         last_time = last.index[0]
         return last_time
-
     def get_data(self,db_name, ms_name):
         """
         Get all data of the specific mearuement
+        """
+        """
+        지정한  measurement의 ``모든 data`` 가져오기
+        docstring::
+            from influxdb import InfluxDBClient
+            self.switch_MS(db_name, ms_name)
+            query_string = "select * from "+'"'+ms_name+'"'+""
+            df = pd.DataFrame(self.DBClient.query(query_string).get_points())
+            df = self.cleanup_df(df)
+            
+            return df
+        
+        :param db_name: ``database name``
+        :type db_name: string
+        :param ms_name: ``measurement name``
+        :type ms_name: string
+               
+        :returns: dataframe으로 가져온 data저장
+        
+        :rtype: tuple
+        
+        :raises ValueError: When ``a`` is not an integer.
         """
         self.switch_MS(db_name, ms_name)
         query_string = "select * from "+'"'+ms_name+'"'+""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
-
     def get_data_by_time(self, bind_params, db_name, ms_name):
         """
         Get data of the specific measurement based on start-end duration
@@ -150,7 +160,6 @@ class influxClient():
         df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
         df = self.cleanup_df(df)
         return df
-
     def get_data_by_days(self, bind_params, db_name, ms_name):
         """
         Get data of the specific mearuement based on time duration (days)
@@ -164,8 +173,6 @@ class influxClient():
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
-
-
     def get_datafront_by_num(self, number, db_name, ms_name):
         """
         Get the first N number data from the specific measurement
@@ -175,7 +182,6 @@ class influxClient():
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
-
     def get_dataend_by_num(self, number, db_name, ms_name):
         """
         Get the last N number data from the specific measurement
@@ -185,7 +191,6 @@ class influxClient():
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
-
     def cleanup_df(self, df):
         """
         Clean data, remove duplication, Sort, Set index (datetime)
@@ -200,10 +205,9 @@ class influxClient():
         df = df.drop_duplicates(keep='first')
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
-
         return df
-
     def get_freq(self, db_name, ms_name):
         data = self.get_datafront_by_num(10,db_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine(data).get_inferred_freq())}
+        from KETIPrePartialDataPreprocessing.data_cleaning.data_refine import RefineData
+        print(RefineData().get_frequency(data))
+        return {"freq" : str(RefineData().get_frequency(data))}

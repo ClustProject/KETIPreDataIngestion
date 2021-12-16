@@ -13,6 +13,11 @@ class influxClient():
 
     
     ``코드 박스`` 테스트중
+    
+
+    *italic체*
+
+    **bold체**
 
     """
     def __init__(self, influx_setting):

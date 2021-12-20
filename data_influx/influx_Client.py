@@ -246,7 +246,7 @@ class influxClient():
     def get_freq(self, db_name, ms_name):
         data = self.get_datafront_by_num(10,db_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine(data).get_inferred_freq())}
+        return {"freq" : str(FrequencyRefine().get_RefinedData(data).freq)}
 
     def get_tagList(self, db_name, ms_name):
         """

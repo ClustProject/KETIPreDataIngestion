@@ -248,6 +248,7 @@ class influxClient():
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
         return {"freq" : str(FrequencyRefine(data).get_inferred_freq())}
 
+
     def get_tagList(self, db_name, ms_name):
         """
         Get all tag keys list of the specific measurement.
@@ -255,7 +256,7 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW tag KEYS"
         tagkeys = list(self.DBClient.query(query_string).get_points(measurement=ms_name))
-        tagList = list(x['tagkey'] for x in tagkeys)
+        tagList = list(x['tagKey'] for x in tagkeys)
 
         return tagList
 

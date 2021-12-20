@@ -265,7 +265,7 @@ class influxClient():
         Get tagvalue set by tag key
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+'" WHERE \''+tag_key+'\'="'+tag_value+'"'
+        query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
         print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)

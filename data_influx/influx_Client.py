@@ -248,7 +248,6 @@ class influxClient():
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
         return {"freq" : str(FrequencyRefine(data).get_inferred_freq())}
 
-
     def get_tagList(self, db_name, ms_name):
         """
         Get all tag keys list of the specific measurement.

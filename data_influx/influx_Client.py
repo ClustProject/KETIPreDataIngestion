@@ -271,4 +271,16 @@ class influxClient():
         df = self.cleanup_df(df)
         return df
 
+    def get_TagValue(self, db_name, ms_name, tag_key):
+        """
+        Get tag value
+        """
+        self.switch_MS(db_name, ms_name)
+        query_string = 'show tag values with key = ' + tag_key
+        print(query_string)
+        tag_value = list(self.DBClient.query(query_string).get_points())
+        value_list = list(x['value'] for x in tag_value)
+
+        return value_list
+
         

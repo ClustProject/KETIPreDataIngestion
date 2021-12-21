@@ -228,7 +228,11 @@ class influxClient():
 
     def cleanup_df(self, df):
         """
-        Clean data, remove duplication, Sort, Set index (datetime)
+        **Clean data, remove duplication, Sort, Set index (datetime)**
+
+
+
+
         """
         import numpy as np
         if 'time' in df.columns:
@@ -244,13 +248,28 @@ class influxClient():
         return df
 
     def get_freq(self, db_name, ms_name):
+        """
+        
+        """
         data = self.get_datafront_by_num(10,db_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
         return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
 
     def get_tagList(self, db_name, ms_name):
         """
-        Get all tag keys list of the specific measurement.
+        **Get all tag keys list of the specific measurement.**
+
+        특정 measurement가 가지고 있는 모든 tag key를 출력한다.
+       
+        docstring::
+
+            SHOW tag KEYS on {ms_name}
+
+        :param db_name: database name
+        :type db_name: str
+
+        :param ms_name: measurement name
+        :type ms_name: str
         """
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW tag KEYS"
@@ -261,24 +280,51 @@ class influxClient():
 
     def get_TagGroupData(self, db_name, ms_name, tag_key, tag_value):
         """
-        Get tagvalue set by tag key
+        **Get tagvalue set by tag key**
+
+        선택한 ``tag key`` 의 특정 ``data`` 가 가지고 있는 모든 정보를 출력한다.
+
+        docstring::
+
+            select * from ms_name WHERE {tag_key} = {tag_value}
+
+
+        :param db_name: database name
+        :type db_name: str
+
+        :param ms_name: measurement name
+        :type ms_name: str
+
+        :param tag_key: tag key
+        :type tag_key: str
+
+        :param tag_value: select tag key data
+        :type tag_value: str
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
         print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
+        print(df)
         return df
 
     def get_TagValue(self, db_name, ms_name, tag_key):
         """
-        Get tag value distinct
+        **Get tag value distinct**
 
+        선택한 ``tag key`` 가 가지고 있는 값들을 불러온다 ``(중복X)``
+
+        docstring::
+
+            show tag values with key = {tag_key}
+        
         Args:
             db_name: database name
             ms_name: measurement name
-            tag_key: tag key 
+            tag_key: tag key
         """
+
         self.switch_MS(db_name, ms_name)
         query_string = 'show tag values with key = ' + tag_key
         print(query_string)

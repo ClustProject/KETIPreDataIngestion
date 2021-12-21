@@ -273,6 +273,11 @@ class influxClient():
     def get_TagValue(self, db_name, ms_name, tag_key):
         """
         Get tag value distinct
+
+        Args:
+            db_name: database name
+            ms_name: measurement name
+            tag_key: tag key 
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'show tag values with key = ' + tag_key

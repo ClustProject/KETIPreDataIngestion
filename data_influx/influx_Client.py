@@ -120,7 +120,7 @@ class influxClient():
         **Get all feature(field) list of the specific measurement.** \n
         지정한 measurement의 ``모든 field key`` 를 조회
 
-        docstring::
+        **Query**::
 
             show field keys on {ms_name}
 
@@ -141,7 +141,7 @@ class influxClient():
         **Get the first data of the specific mearuement** \n
         선택한 data의 ``첫 시간 data`` 를 조회
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} LIMIT 1
 
@@ -163,7 +163,7 @@ class influxClient():
         **Get the last data of the specific mearuement** \n
         선택한 data의 ``마지막 시간 data`` 를 조회
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} ORDER BY DESC LIMIT 1
 
@@ -186,7 +186,7 @@ class influxClient():
         Get all data of the specific mearuement
         선택한 measurement의 ``모든 data`` 가져오기
 
-        docstring::
+        **Query**::
 
             select * from {ms_name}
         
@@ -208,14 +208,14 @@ class influxClient():
         *get_datafront_by_duration(self, start_time, end_time)* \n
         ``지정한 기간 사이`` 의 모든 data 조회
 
-        docstring::
+        **Example**::
 
             ex> bind_params example
             bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
                             'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
         
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} where time >= {start_time} and time < {end_time}
 
@@ -240,12 +240,12 @@ class influxClient():
         
         특정 ``기간``  안의 data 조회
 
-        docstring::
+        **Example**::
 
             ex> bind_param example
             bind_params = {'end_time': 1615991400000, 'days': '7d'}
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} where time >= bind_params["end_time"] - bind_params["days"]
 
@@ -273,7 +273,7 @@ class influxClient():
         
         data의 ``첫 1행`` 을 조회한다.
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} limit {number}
 
@@ -295,7 +295,7 @@ class influxClient():
 
         data의 ``마지막 1행`` 을 조회한다.
 
-        docstring::
+        **Query**::
 
             select * from {ms_name} order by desc limit {number}
 
@@ -349,7 +349,7 @@ class influxClient():
         **Get all tag keys list of the specific measurement.** \n
         특정 measurement가 가지고 있는 모든 ``tag key`` 를 출력한다.
        
-        docstring::
+        **Query**::
 
             show tag keys on {ms_name}
 
@@ -372,7 +372,7 @@ class influxClient():
 
         선택한 ``tag key`` 의 특정 ``data`` 가 가지고 있는 모든 정보를 출력한다.
 
-        docstring::
+        **Query**::
 
             select * from ms_name WHERE {tag_key} = {tag_value}
 
@@ -403,7 +403,7 @@ class influxClient():
 
         선택한 ``tag key`` 가 가지고 있는 값들을 불러온다 ``(중복X)``
 
-        docstring::
+        **Query**::
 
             show tag values with key = {tag_key}
         

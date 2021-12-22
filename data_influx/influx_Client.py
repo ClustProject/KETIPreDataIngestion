@@ -20,6 +20,9 @@ class influxClient():
 
         모든 ``database`` 를 가져온다.
 
+        example
+            >>> aaa
+
         """
         db_list = []
         ori_db_list = self.DBClient.get_list_database()
@@ -42,6 +45,9 @@ class influxClient():
         **get all measurement list related to the db**
 
         선택한 database의 모든 ``measurement`` 를 가져온다
+
+
+        :return: measurement list
 
 
         """
@@ -304,6 +310,8 @@ class influxClient():
 
         :param ms_name: measurement name
         :type ms_name: string
+
+        :return: df, last data
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
@@ -322,6 +330,8 @@ class influxClient():
 
         :param df: dataFrame
         :type df: dataFrame
+
+        :return: df, data setting
         """
         import numpy as np
         if 'time' in df.columns:
@@ -347,7 +357,9 @@ class influxClient():
     def get_tagList(self, db_name, ms_name):
         """
         **Get all tag keys list of the specific measurement.** \n
-        특정 measurement가 가지고 있는 모든 ``tag key`` 를 출력한다.
+        특정 measurement가 가지고 있는 모든 :guilabel:`tag key` 를 출력한다. \n
+        순서대로 화살표 :menuselection:`one --> two --> three --> four --> five`
+
        
         **Query**::
 
@@ -358,6 +370,9 @@ class influxClient():
 
         :param ms_name: measurement name
         :type ms_name: string
+
+        :return: tagList, measurement tag key
+        
         """
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW tag KEYS"
@@ -388,6 +403,9 @@ class influxClient():
 
         :param tag_value: select tag key data
         :type tag_value: string
+
+        :return: df, tag key data
+        
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
@@ -411,6 +429,9 @@ class influxClient():
             db_name: database name
             ms_name: measurement name
             tag_key: tag key
+
+        :return: value_list, tag key value list
+
         """
 
         self.switch_MS(db_name, ms_name)

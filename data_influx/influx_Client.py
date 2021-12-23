@@ -85,15 +85,16 @@ class influxClient():
         Get measurement Data Set according to the dbinfo
         Each function makes dataframe output with "timedate" index.
 
-        ?????
-
-        :param intDataInfo: don`t know
-        :type intDataInfo: don`t know
+        :param intDataInfo: indDataInfo
+        :type intDataInfo: dic
 
         :return: MSdataset
         """
         MSdataSet ={}
+        print(intDataInfo)
         for i, dbinfo in enumerate(intDataInfo['db_info']):
+            print(i)
+            print(dbinfo)
             db_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             self.switch_MS(db_name, ms_name)
@@ -450,4 +451,37 @@ class influxClient():
 
         return value_list
 
-        
+
+
+# MSdataSet ={}
+#         for i, dbinfo in enumerate(intDataInfo['db_info']):
+#             print(i)
+#             print(dbinfo)
+#             db_name = dbinfo['db_name']
+#             ms_name = dbinfo['measurement']
+#             self.switch_MS(db_name, ms_name)
+#             bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
+#             MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
+#             MSdataSet[i].index.name ='datetime'
+
+#         return MSdataSet
+
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+
+#     intDataInfo = {"db_info":
+#                 [
+#                 {"db_name": "air_indoor_어린이집",
+#                 "measurement":"ICW0W2100153", 
+#                 "end": "2021-08-20T21:54:00Z", 
+#                 "start":"2021-02-09T16:17:00Z"}, 
+#                 {"db_name": "air_indoor_어린이집",
+#                 "measurement":"ICW0W2100152", 
+#                 "end": "2021-09-01T00:01:00Z", 
+#                 "start":"2021-02-09T16:17:00Z"}
+#                 ]
+#             }
+
+#     test = influxClient(ins)
+#     ms_dataset = test.get_MeasurementDataSet(intDataInfo)
+#     print(ms_dataset)

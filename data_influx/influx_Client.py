@@ -15,14 +15,10 @@ class influxClient():
 
     def get_DBList(self):
         """
-        **get all db List according to the influx setting** \n
-        **remove the 1st useless name (defalut information)**
+        get all db List according to the influx setting
+        *remove the 1st useless name (defalut information)*
 
-        모든 ``database`` 를 가져온다.
-
-        example
-            >>> aaa
-
+        :return: db_list
         """
         db_list = []
         ori_db_list = self.DBClient.get_list_database()
@@ -30,26 +26,26 @@ class influxClient():
             db_list.append(ori_db_list[num]['name'])
         return db_list
 
+
 ##### DB Function
 
     def switch_DB(self, db_name):
         """
-        **Before explore the specific DB, Switch DB.**
+        Before explore the specific DB, Switch DB.
 
         """
         self.db_name = db_name 
         self.DBClient.switch_database(self.db_name)        
     
+
     def measurement_list(self, db_name):
         """
-        **get all measurement list related to the db**
+        get :guilabel:`all measurement` list related to the db
 
-        선택한 database의 모든 ``measurement`` 를 가져온다
-
+        :param db_name: database
+        :type db_name: string
 
         :return: measurement list
-
-
         """
         self.switch_DB(db_name)
         measurement_list = []
@@ -58,12 +54,13 @@ class influxClient():
             measurement_list.append(ori_ms_list[num]['name'])
         return measurement_list
 
+
     def measurement_list_only_start_end(self, db_name):
         """
-        **Get the only start and end measurement name** \n
-        **Use this function to reduce the DB load time.**
+        Get the only start and end measurement name
+        Use this function to reduce the DB load time.
 
-
+        :return: measurement list
         """
         self.switch_DB(db_name)
         measurement_list = []
@@ -85,14 +82,15 @@ class influxClient():
 
     def get_MeasurementDataSet(self, intDataInfo):
         """
-        **Get measurement Data Set according to the dbinfo** \n
-        **Each function makes dataframe output with "timedate" index.**
+        Get measurement Data Set according to the dbinfo
+        Each function makes dataframe output with "timedate" index.
 
         ?????
 
         :param intDataInfo: don`t know
         :type intDataInfo: don`t know
 
+        :return: MSdataset
         """
         MSdataSet ={}
         for i, dbinfo in enumerate(intDataInfo['db_info']):
@@ -109,31 +107,32 @@ class influxClient():
     ##### MS Function
     def switch_MS(self, db_name, ms_name):
         """
-        **Before getting the specific measurement data and information, switch MS** \n
-        변수 사용을 위한 ``초기화``
+        Before getting the specific measurement data and information, switch MS
 
-        :param db_name: database name
+        :param db_name: database 
         :type db_name: string
-        :param ms_name: measurement name
+        :param ms_name: measurement
         :type ms_name: string
         """
         self.db_name = db_name 
         self.ms_name = ms_name
         self.DBClient.switch_database(db_name)
+
         
     def get_fieldList(self, db_name, ms_name):
         """
-        **Get all feature(field) list of the specific measurement.** \n
-        지정한 measurement의 ``모든 field key`` 를 조회
+        Get :guilabel:`all feature(field)` list of the specific measurement.
 
         **Query**::
 
             show field keys on {ms_name}
 
-        :param db_name: database name
+        :param db_name: database 
         :type db_name: string
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
+
+        :return: fieldList in measurement
         """
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW FIELD KEYS"
@@ -142,19 +141,21 @@ class influxClient():
 
         return fieldList
 
+
     def get_first_time(self, db_name, ms_name):
         """
-        **Get the first data of the specific mearuement** \n
-        선택한 data의 ``첫 시간 data`` 를 조회
+        Get the :guilabel:`first data` of the specific mearuement
 
         **Query**::
 
             select * from {ms_name} LIMIT 1
 
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
-        :param ms_name: measurement name
+        :param ms_name: measurement
         :type ms_name: string
+
+        :return: first time in data
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
@@ -164,20 +165,21 @@ class influxClient():
         #df = self.cleanup_df(df)
         return first_time
 
+
     def get_last_time(self, db_name, ms_name):
         """
-        **Get the last data of the specific mearuement** \n
-        선택한 data의 ``마지막 시간 data`` 를 조회
+        Get the :guilabel:`last data` of the specific mearuement
 
         **Query**::
 
             select * from {ms_name} ORDER BY DESC LIMIT 1
 
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
 
+        :return: last time in data
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
@@ -187,20 +189,21 @@ class influxClient():
         last_time = last.index[0]
         return last_time
 
+
     def get_data(self,db_name, ms_name):
         """
-        Get all data of the specific mearuement
-        선택한 measurement의 ``모든 data`` 가져오기
+        Get :guilabel:`all data` of the specific mearuement
 
         **Query**::
 
             select * from {ms_name}
         
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
 
+        :return: df, measurement data
         """
         self.switch_MS(db_name, ms_name)
         query_string = "select * from "+'"'+ms_name+'"'+""
@@ -210,9 +213,8 @@ class influxClient():
 
     def get_data_by_time(self, bind_params, db_name, ms_name):
         """
-        **Get data of the specific measurement based on start-end duration**
-        *get_datafront_by_duration(self, start_time, end_time)* \n
-        ``지정한 기간 사이`` 의 모든 data 조회
+        Get data of the specific measurement based on :guilabel:`start-end duration`
+        *get_datafront_by_duration(self, start_time, end_time)*
 
         **Example**::
 
@@ -220,7 +222,6 @@ class influxClient():
             bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
                             'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
         
-
         **Query**::
 
             select * from {ms_name} where time >= {start_time} and time < {end_time}
@@ -228,11 +229,13 @@ class influxClient():
         :param bind_params: end time & start time
         :type bind_params: dictionary
 
-        :param db_name: database name
+        :param db_name: database 
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
+
+        :return: df, time duration
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
@@ -240,29 +243,32 @@ class influxClient():
         df = self.cleanup_df(df)
         return df
 
+
     def get_data_by_days(self, bind_params, db_name, ms_name):
         """
-        **Get data of the specific mearuement based on time duration (days)**
-        
-        특정 ``기간``  안의 data 조회
+        Get data of the specific mearuement based on :guilabel:`time duration` (days)
 
         **Example**::
 
             ex> bind_param example
             bind_params = {'end_time': 1615991400000, 'days': '7d'}
 
+
         **Query**::
 
             select * from {ms_name} where time >= bind_params["end_time"] - bind_params["days"]
 
+
         :param bind_params: end time & duration days
         :type bind_params: dictionary
 
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement
         :type ms_name: string
+
+        :return: df, time duration
 
         """
         self.switch_MS(db_name, ms_name)
@@ -275,19 +281,21 @@ class influxClient():
 
     def get_datafront_by_num(self, number, db_name, ms_name):
         """
-        **Get the first N number data from the specific measurement**
+        Get the :guilabel:`first N number` data from the specific measurement
         
-        data의 ``첫 1행`` 을 조회한다.
 
         **Query**::
 
             select * from {ms_name} limit {number}
 
-        :param db_name: database name
+
+        :param db_name: database 
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
+
+        :return: df, first N(number) row data in measurement
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'SELECT * FROM "' + ms_name +'" LIMIT '+ str(number) +""
@@ -295,23 +303,22 @@ class influxClient():
         df = self.cleanup_df(df)
         return df
 
+
     def get_dataend_by_num(self, number, db_name, ms_name):
         """
-        **Get the last N number data from the specific measurement**
-
-        data의 ``마지막 1행`` 을 조회한다.
+        Get the :guilabel:`last N number` data from the specific measurement
 
         **Query**::
 
             select * from {ms_name} order by desc limit {number}
 
-        :param db_name: database name
+        :param db_name: database 
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
 
-        :return: df, last data
+        :return: df, last N(number) row data in measurement
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
@@ -321,12 +328,12 @@ class influxClient():
 
     def cleanup_df(self, df):
         """
-        **Clean data, remove duplication, Sort, Set index (datetime)**
+        Clean data, remove duplication, Sort, Set index (datetime)
 
-        - datetime을 ``index`` 로 설정 
-        - ``중복데이터`` 제거
-        - ``오름차순`` 으로 정렬
-        - 빈 칸을 ``Nan`` 값으로 대체 
+        - Set index to datetime
+        - Remove duplication
+        - Sort ascending
+        - Replace blank to Nan
 
         :param df: dataFrame
         :type df: dataFrame
@@ -354,24 +361,22 @@ class influxClient():
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
         return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
 
+
     def get_tagList(self, db_name, ms_name):
         """
-        **Get all tag keys list of the specific measurement.** \n
-        특정 measurement가 가지고 있는 모든 :guilabel:`tag key` 를 출력한다. \n
-        순서대로 화살표 :menuselection:`one --> two --> three --> four --> five`
-
+        Get :guilabel:`all tag keys` list of the specific measurement. \n
        
         **Query**::
 
             show tag keys on {ms_name}
 
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement
         :type ms_name: string
 
-        :return: tagList, measurement tag key
+        :return: tagList, measurement tag keys
         
         """
         self.switch_MS(db_name, ms_name)
@@ -381,30 +386,29 @@ class influxClient():
 
         return tagList
 
+
     def get_TagGroupData(self, db_name, ms_name, tag_key, tag_value):
         """
-        **Get tagvalue set by tag key**
-
-        선택한 ``tag key`` 의 특정 ``data`` 가 가지고 있는 모든 정보를 출력한다.
+        Get :guilabel:`tag value` set by tag key
 
         **Query**::
 
             select * from ms_name WHERE {tag_key} = {tag_value}
 
 
-        :param db_name: database name
+        :param db_name: database
         :type db_name: string
 
-        :param ms_name: measurement name
+        :param ms_name: measurement 
         :type ms_name: string
 
         :param tag_key: tag key
         :type tag_key: string
 
-        :param tag_value: select tag key data
+        :param tag_value: selected tag key data
         :type tag_value: string
 
-        :return: df, tag key data
+        :return: new dataframe
         
         """
         self.switch_MS(db_name, ms_name)
@@ -415,23 +419,27 @@ class influxClient():
         print(df)
         return df
 
+
     def get_TagValue(self, db_name, ms_name, tag_key):
         """
-        **Get tag value distinct**
+        Get :guilabel:`unique value` of selected tag key
 
-        선택한 ``tag key`` 가 가지고 있는 값들을 불러온다 ``(중복X)``
 
         **Query**::
 
             show tag values with key = {tag_key}
-        
-        Args:
-            db_name: database name
-            ms_name: measurement name
-            tag_key: tag key
 
-        :return: value_list, tag key value list
 
+        :param db_name: database
+        :type db_name: string
+
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :param tag_key: select tag key data
+        :type tag_key: string
+
+        :return: unique tag value list
         """
 
         self.switch_MS(db_name, ms_name)

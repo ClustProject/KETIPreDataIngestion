@@ -30,8 +30,9 @@ class influxClient():
 
         see also
         ------------
-        :attr:`get_DBList`
-        :attr:`switch_DB`
+        :attr:`switch_MS`
+        :attr:`measurement_list`
+        :attr:`get_data`
         """
         db_list = []
         ori_db_list = self.DBClient.get_list_database()
@@ -141,7 +142,7 @@ class influxClient():
         """
         Get :guilabel:`all feature(field)` list of the specific measurement.
 
-        **Query**::
+        **Influx Query**::
 
             show field keys on {ms_name}
 
@@ -165,7 +166,7 @@ class influxClient():
         """
         Get the :guilabel:`first data` of the specific mearuement
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} LIMIT 1
 
@@ -190,7 +191,7 @@ class influxClient():
         """
         Get the :guilabel:`last data` of the specific mearuement
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} ORDER BY DESC LIMIT 1
 
@@ -215,7 +216,7 @@ class influxClient():
         """
         Get :guilabel:`all data` of the specific mearuement
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name}
         
@@ -238,13 +239,12 @@ class influxClient():
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
 
-        **Example**::
-
-            ex> bind_params example
-            bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
+        Example
+            >>> ex> bind_params example
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
                             'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
         
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} where time >= {start_time} and time < {end_time}
 
@@ -277,7 +277,7 @@ class influxClient():
             bind_params = {'end_time': 1615991400000, 'days': '7d'}
 
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} where time >= bind_params["end_time"] - bind_params["days"]
 
@@ -308,7 +308,7 @@ class influxClient():
         Get the :guilabel:`first N number` data from the specific measurement
         
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} limit {number}
 
@@ -333,7 +333,7 @@ class influxClient():
         """
         Get the :guilabel:`last N number` data from the specific measurement
 
-        **Query**::
+        **Influx Query**::
 
             select * from {ms_name} order by desc limit {number}
 
@@ -399,7 +399,7 @@ class influxClient():
         """
         Get :guilabel:`all tag keys` list of the specific measurement. \n
        
-        **Query**::
+        **Influx Query**::
 
             show tag keys on {ms_name}
 
@@ -425,7 +425,7 @@ class influxClient():
         """
         Get :guilabel:`tag value` set by tag key
 
-        **Query**::
+        **Influx Query**::
 
             select * from ms_name WHERE {tag_key} = {tag_value}
 
@@ -460,7 +460,7 @@ class influxClient():
         Get :guilabel:`unique value` of selected tag key
 
 
-        **Query**::
+        **Influx Query**::
 
             show tag values with key = {tag_key}
 

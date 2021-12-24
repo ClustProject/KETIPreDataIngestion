@@ -20,6 +20,18 @@ class influxClient():
 
         :return: db_list
         :rtype: List
+
+        Note는 추가 사항 적기 가능 \n
+        see also는 특정 함수를 지정해서 링크처럼 이동할 수 있음
+
+        Note
+        ----
+        note test
+
+        see also
+        ------------
+        :attr:`get_DBList`
+        :attr:`switch_DB`
         """
         db_list = []
         ori_db_list = self.DBClient.get_list_database()
@@ -93,6 +105,7 @@ class influxClient():
 
         :return: MSdataset
         :rtype: Dict
+
         """
         MSdataSet ={}
         print(intDataInfo)

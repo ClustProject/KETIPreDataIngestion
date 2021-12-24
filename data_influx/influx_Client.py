@@ -19,6 +19,7 @@ class influxClient():
         *remove the 1st useless name (defalut information)*
 
         :return: db_list
+        :rtype: List
         """
         db_list = []
         ori_db_list = self.DBClient.get_list_database()
@@ -46,6 +47,7 @@ class influxClient():
         :type db_name: string
 
         :return: measurement list
+        :rtype: List
         """
         self.switch_DB(db_name)
         measurement_list = []
@@ -61,6 +63,7 @@ class influxClient():
         Use this function to reduce the DB load time.
 
         :return: measurement list
+        :rtype: List
         """
         self.switch_DB(db_name)
         measurement_list = []
@@ -85,10 +88,11 @@ class influxClient():
         Get measurement Data Set according to the dbinfo
         Each function makes dataframe output with "timedate" index.
 
-        :param intDataInfo: indDataInfo
+        :param intDataInfo: intDataInfo
         :type intDataInfo: dic
 
         :return: MSdataset
+        :rtype: Dict
         """
         MSdataSet ={}
         print(intDataInfo)
@@ -134,6 +138,7 @@ class influxClient():
         :type ms_name: string
 
         :return: fieldList in measurement
+        :rtype: List
         """
         self.switch_MS(db_name, ms_name)
         query_string = "SHOW FIELD KEYS"
@@ -157,6 +162,7 @@ class influxClient():
         :type ms_name: string
 
         :return: first time in data
+        :return: String
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
@@ -181,6 +187,7 @@ class influxClient():
         :type ms_name: string
 
         :return: last time in data
+        :rtype: String
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
@@ -205,6 +212,7 @@ class influxClient():
         :type ms_name: string
 
         :return: df, measurement data
+        :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
         query_string = "select * from "+'"'+ms_name+'"'+""
@@ -237,6 +245,7 @@ class influxClient():
         :type ms_name: string
 
         :return: df, time duration
+        :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
@@ -270,6 +279,7 @@ class influxClient():
         :type ms_name: string
 
         :return: df, time duration
+        :rtype: DataFrame
 
         """
         self.switch_MS(db_name, ms_name)
@@ -297,6 +307,7 @@ class influxClient():
         :type ms_name: string
 
         :return: df, first N(number) row data in measurement
+        :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'SELECT * FROM "' + ms_name +'" LIMIT '+ str(number) +""
@@ -320,6 +331,7 @@ class influxClient():
         :type ms_name: string
 
         :return: df, last N(number) row data in measurement
+        :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
@@ -340,6 +352,7 @@ class influxClient():
         :type df: dataFrame
 
         :return: df, data setting
+        :rtype: DataFrame
         """
         import numpy as np
         if 'time' in df.columns:
@@ -356,7 +369,13 @@ class influxClient():
 
     def get_freq(self, db_name, ms_name):
         """
-        ...??
+        :param db_name: database
+        :type db_name: string
+        :param ms_name: database
+        :type ms_name: string
+
+        :return: freq
+        :rtype: Dict
         """
         data = self.get_datafront_by_num(10,db_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
@@ -378,6 +397,7 @@ class influxClient():
         :type ms_name: string
 
         :return: tagList, measurement tag keys
+        :rtpye: List
         
         """
         self.switch_MS(db_name, ms_name)
@@ -410,6 +430,7 @@ class influxClient():
         :type tag_value: string
 
         :return: new dataframe
+        :rtype: DataFrame
         
         """
         self.switch_MS(db_name, ms_name)
@@ -441,6 +462,7 @@ class influxClient():
         :type tag_key: string
 
         :return: unique tag value list
+        :rtype: List
         """
 
         self.switch_MS(db_name, ms_name)
@@ -485,3 +507,4 @@ class influxClient():
 #     test = influxClient(ins)
 #     ms_dataset = test.get_MeasurementDataSet(intDataInfo)
 #     print(ms_dataset)
+#     print(type(ms_dataset))

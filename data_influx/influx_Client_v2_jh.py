@@ -49,6 +49,21 @@ query_client = client.query_api()
 
 
 
+"""
+from(bucket: "example")
+  |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)
+  ---> _start, _stop 사이의 _time 값을 가져올 방법은?
+
+  |> filter(fn: (r) => r["_measurement"] == "test1")
+  |> filter(fn: (r) => r["_field"] == "co2")
+  ---> RDB의 where 조건문 같은 역할
+  
+  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+  ---> every:시간 주기 / fn: value를 나타낼 값 계산
+
+  |> yield(name: "mean")
+"""
+
 # 밑의 두 query 정상 작동
 query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
 
@@ -56,7 +71,9 @@ query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn
 # from(bucket: "example")
 #   |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)
 #   |> filter(fn: (r) => r["_measurement"] == "test1")
+#   |> filter(fn: (r) => r["_field"] == "co2")
 #   |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+#   |> yield(name: "mean")
 # '''
 
 

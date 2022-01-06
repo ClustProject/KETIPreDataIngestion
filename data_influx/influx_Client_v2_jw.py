@@ -3,6 +3,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 
+
 #if __name__ == "__main__":
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
@@ -15,7 +16,6 @@ token = "ikypdB_8I2wtlzNHPPjoy87UUbHasvPkBKNzeKUFb4d8GMfVE4PV_IPZiH3haRLz1_RTHB4
 org_name = "KETI"
 client = InfluxDBClient(url= url, token=token, org= org_name)
 measurement_name = "test"
-
 
 import pandas as pd 
 BASE_DIR = os.getcwd()
@@ -32,8 +32,8 @@ write_client = client.write_api(write_options= ASYNCHRONOUS)
 write_client.write(bucket, record=df, data_frame_measurement_name=measurement_name)
 write_client.__del__()
 
-"""
 
+"""
 ### Read
 
 query_client = client.query_api()

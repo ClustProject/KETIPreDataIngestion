@@ -1,11 +1,15 @@
+import re
 import sys
 import os
+
+from rx.core.observable.observable import B
+from urllib3 import request
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 
 
 #if __name__ == "__main__":
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
 
 #client = InfluxDBClient.from_config_file("config.ini") #?????
@@ -18,36 +22,32 @@ client = InfluxDBClient(url= url, token=token, org= org_name)
 measurement_name = "test1"
 
 
-import pandas as pd 
-BASE_DIR = os.getcwd()
-df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/data_miss_original.csv"
-input_file = os.path.join(BASE_DIR, df_file)
-df = pd.read_csv(df_file, parse_dates=True, index_col ='timedate')
-
-
-# https://docs.influxdata.com/influxdb/v2.1/query-data/get-started/query-influxdb/
-# https://influxdb-client.readthedocs.io/en/v1.2.0/usage.html#the-data-could-be-written-as
-# https://github.com/influxdata/influxdb-client-python
+### ------------------------------------------------------------------------------
 ### Write
-write_client = client.write_api(write_options= ASYNCHRONOUS)
-write_client.write(bucket, record=df, data_frame_measurement_name=measurement_name)
-write_client.__del__()
+
+# import pandas as pd 
+# BASE_DIR = os.getcwd()
+# df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/11월_환경데이터.csv"
+# input_file = os.path.join(BASE_DIR, df_file)
+# df = pd.read_csv(df_file, parse_dates=True, index_col ='time')
+
+
+# # https://docs.influxdata.com/influxdb/v2.1/query-data/get-started/query-influxdb/
+# # https://influxdb-client.readthedocs.io/en/v1.2.0/usage.html#the-data-could-be-written-as
+# # https://github.com/influxdata/influxdb-client-python
+# ### Write
+# write_client = client.write_api(write_options= ASYNCHRONOUS)
+# write_client.write(bucket, record=df, data_frame_measurement_name=measurement_name)
+# write_client.__del__()
+### ------------------------------------------------------------------------------
 
 
 
+
+
+### ------------------------------------------------------------------------------
 ### Read
-
 query_client = client.query_api()
-
-# query = 'from(bucket:"'+bucket +'") |> range(start: -1000d) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'") '
-# query = 'from(bucket:"'+bucket +'") '
-# query = 'from(bucket: "'+bucket+'") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'" |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false) |> yield(name: "mean")'
-# query = 'from(bucket: "'+bucket+'") ' \
-# ' |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)' \
-# ' |> filter(fn: (r) => r["_measurement"] == ""'+measurement_name+'")' \
-# ' |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
-
-
 
 """
 from(bucket: "example")
@@ -64,7 +64,6 @@ from(bucket: "example")
   |> yield(name: "mean")
 """
 
-# 밑의 두 query 정상 작동
 query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
 
 # query ='''
@@ -77,10 +76,73 @@ query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn
 # '''
 
 
-print(query)
-data_frame = query_client.query_data_frame(query)
+# print(query)
+# data_frame = query_client.query_data_frame(query)
 
-print(data_frame)
+# print(data_frame)
+
+
+
+### ---------------- Read meaasurements, field, time, start, stop ----------------
+
+# result = client.query_api().query(org=org_name,query=query)
+# print(type(result))
+# results = []
+# for table in result:
+#   for record in table.records:
+#     results.append((record.get_measurement(), record.get_field(), record.get_time(), record.get_start(), record.get_stop()))
+
+# for i in results:
+#   print(i)
+### ------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+### ---------------- Read Bucket list ----------------
+thread = BucketsService.get_buckets(async_req=True, org=org_name)
+thread_data = thread.get()
+bucket_query = client.buckets_api().find_buckets(thread_data)
+print("~~~~~\n")
+print(type(bucket_query))
+print("~~~~~\n")
+# print(bucket_query)
+
+
+# bucket_list =[]
+# for num in bucket_query.name:
+#   bucket_list.append(num)
+
+# print(bucket_list)
+
+
+# print(bucket_query)
+
+
+
+### ------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 query_client.__del__()
 
 

@@ -22,8 +22,7 @@ client = InfluxDBClient(url= url, token=token, org= org_name)
 measurement_name = "test1"
 
 
-### ------------------------------------------------------------------------------
-### Write
+### Write ------------------------------------------------------------
 
 # import pandas as pd 
 # BASE_DIR = os.getcwd()
@@ -39,14 +38,60 @@ measurement_name = "test1"
 # write_client = client.write_api(write_options= ASYNCHRONOUS)
 # write_client.write(bucket, record=df, data_frame_measurement_name=measurement_name)
 # write_client.__del__()
-### ------------------------------------------------------------------------------
 
 
 
 
 
-### ------------------------------------------------------------------------------
-### Read
+
+
+
+### Read Bucket list -------------------------------------------
+buckets_api = client.buckets_api()
+buckets = buckets_api.find_buckets().buckets
+# print("\n".join([f" ---------\n ID: {bucket.id}\n Name: {bucket.name}\n Retention: {bucket.retention_rules}"
+#                   for bucket in buckets]))
+
+bk_list = []
+
+for bucket in buckets:
+  bk_list.append(bucket.name)
+
+print(bk_list)
+
+
+
+
+
+### Read meaasurements list ---------------------------------
+
+
+
+
+
+
+
+
+
+
+### Read meaasurements, field, time, start, stop ---------------------------------
+# result = client.query_api().query(org=org_name,query=query)
+# results = []
+# for table in result:
+#   for record in table.records:
+#     results.append((record.get_measurement(), record.get_field(), record.get_time(), record.get_start(), record.get_stop()))
+
+
+# for i in results:
+#   print(i)
+
+
+
+
+
+
+### Read InfluxDB Data(Flux query) -----------------------------------------------
+
 query_client = client.query_api()
 
 """
@@ -64,78 +109,20 @@ from(bucket: "example")
   |> yield(name: "mean")
 """
 
-query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
+query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
 
 # query ='''
 # from(bucket: "example")
 #   |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)
-#   |> filter(fn: (r) => r["_measurement"] == "test1")
-#   |> filter(fn: (r) => r["_field"] == "co2")
+#   |> filter(fn: (r) => r._measurement == "test1")
+#   |> filter(fn: (r) => r._field == "co2")
 #   |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
 #   |> yield(name: "mean")
 # '''
 
-
 # print(query)
 # data_frame = query_client.query_data_frame(query)
-
 # print(data_frame)
-
-
-
-### ---------------- Read meaasurements, field, time, start, stop ----------------
-
-# result = client.query_api().query(org=org_name,query=query)
-# print(type(result))
-# results = []
-# for table in result:
-#   for record in table.records:
-#     results.append((record.get_measurement(), record.get_field(), record.get_time(), record.get_start(), record.get_stop()))
-
-# for i in results:
-#   print(i)
-### ------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-### ---------------- Read Bucket list ----------------
-thread = BucketsService.get_buckets(async_req=True, org=org_name)
-thread_data = thread.get()
-bucket_query = client.buckets_api().find_buckets(thread_data)
-print("~~~~~\n")
-print(type(bucket_query))
-print("~~~~~\n")
-# print(bucket_query)
-
-
-# bucket_list =[]
-# for num in bucket_query.name:
-#   bucket_list.append(num)
-
-# print(bucket_list)
-
-
-# print(bucket_query)
-
-
-
-### ------------------------------------------------------------------------------
-
-
-
-
-
-
-
 
 
 

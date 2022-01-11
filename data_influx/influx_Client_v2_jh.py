@@ -45,7 +45,7 @@ measurement_name = "test1"
 
 
 
-### ------------------------------------------------------------------------------
+### ------------------------------------------------------------------------------------
 ### Read
 query_client = client.query_api()
 
@@ -64,21 +64,19 @@ from(bucket: "example")
   |> yield(name: "mean")
 """
 
-query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r["_measurement"] == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
+# query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "'+measurement_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
 
 # query ='''
 # from(bucket: "example")
 #   |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)
-#   |> filter(fn: (r) => r["_measurement"] == "test1")
-#   |> filter(fn: (r) => r["_field"] == "co2")
+#   |> filter(fn: (r) => r._measurement == "test1")
+#   |> filter(fn: (r) => r._field == "co2")
 #   |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
 #   |> yield(name: "mean")
 # '''
 
-
 # print(query)
 # data_frame = query_client.query_data_frame(query)
-
 # print(data_frame)
 
 
@@ -99,40 +97,15 @@ query = 'from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn
 
 
 
-
-
-
-
-
-
-
-
 ### ---------------- Read Bucket list ----------------
-thread = BucketsService.get_buckets(async_req=True, org=org_name)
-thread_data = thread.get()
-bucket_query = client.buckets_api().find_buckets(thread_data)
-print("~~~~~\n")
-print(type(bucket_query))
-print("~~~~~\n")
-# print(bucket_query)
-
-
-# bucket_list =[]
-# for num in bucket_query.name:
-#   bucket_list.append(num)
-
-# print(bucket_list)
-
-
-# print(bucket_query)
-
-
+buckets_api = client.buckets_api()
+print("------------list test-------")
+buckets = buckets_api.find_buckets().buckets
+print("\n".join([f" ---------\n ID: {bucket.id}\n Name: {bucket.name}\n Retention: {bucket.retention_rules}"
+                  for bucket in buckets]))
+print("------------------")
 
 ### ------------------------------------------------------------------------------
-
-
-
-
 
 
 

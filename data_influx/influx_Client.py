@@ -1,7 +1,8 @@
+import re
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from influxdb import InfluxDBClient
+from influxdb import InfluxDBClient,DataFrameClient
 import pandas as pd
 
 class influxClient():
@@ -10,8 +11,14 @@ class influxClient():
 
     """
     def __init__(self, influx_setting):
-        self.influx_setting = influx_setting
-        self.DBClient = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
+        if(type(influx_setting)==dict):
+            self.influx_setting = influx_setting
+            self.DBClient = InfluxDBClient(host=self.influx_setting['host_'], port=self.influx_setting['port_'], username=self.influx_setting['user_'], password = self.influx_setting['pass_'])
+            if "db_name" in self.influx_setting:
+                self.switch_DB(self.influx_setting['db_name'])
+        else:
+            self.influx_setting = influx_setting
+            self.DBClient = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
 
     def get_DBList(self):
         """
@@ -474,7 +481,36 @@ class influxClient():
 
         return value_list
 
+    ## miseon
+    def get_df_by_timestamp(self, ms_name, time_start, time_end):
+        """
+        It returns a table that has data on a measurement(table) in the database from time_start to time_end.
 
+        :param table: a feature name you want to investigate
+        :type table: str
+        :param time_start: start timestamp for search
+        :type time_start: str
+        :param time_end: end timestamp for search
+        :type time_end: str
+
+        :returns: a table comprised with data from time_start to time_end
+        
+        :rtype: class:`pandas.core.frame.DataFrame`
+        """
+        query_string = 'SELECT * FROM "' + ms_name + \
+            '" where time > ' + time_start + ' AND time < '+ time_end
+        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
+        return self.cleanup_df(df)
+    
+    def write_db(self, df, table):
+        """Write data to the influxdb
+        """
+        if(type(self.influx_setting)==dict):
+            frameClient = DataFrameClient(self.influx_setting['host_'],self.influx_setting['port_'],self.influx_setting['user_'],self.influx_setting['pass_'],self.db_name)
+        else:
+            frameClient = DataFrameClient(self.influx_setting.host_,self.influx_setting.port_,self.influx_setting.user_,self.influx_setting.pass_,self.db_name)
+        frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
+    
 
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):
@@ -489,23 +525,37 @@ class influxClient():
 
 #         return MSdataSet
 
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins)
+    db_name = "farm_inner_air"
+    ms_name = "HS1"
+    test.switch_DB(db_name)
+    res = test.get_df_by_timestamp(ms_name, "1546268400000000000","1641913200000000000")
+    print(res)
+    #test.write_db(res,"HS1")
+    rr = test.get_last_time(db_name, ms_name)
+    print(rr)
+    rr= pd.to_datetime(rr)
+    lastDay = rr.strftime('%Y%m%d')
+    print(lastDay)
+    '''
+    intDataInfo = {"db_info":
+                [
+                {"db_name": "air_indoor_어린이집",
+                "measurement":"ICW0W2100153", 
+                "end": "2021-08-20T21:54:00Z", 
+                "start":"2021-02-09T16:17:00Z"}, 
+                {"db_name": "air_indoor_어린이집",
+                "measurement":"ICW0W2100152", 
+                "end": "2021-09-01T00:01:00Z", 
+                "start":"2021-02-09T16:17:00Z"}
+                ]
+            }
 
-#     intDataInfo = {"db_info":
-#                 [
-#                 {"db_name": "air_indoor_어린이집",
-#                 "measurement":"ICW0W2100153", 
-#                 "end": "2021-08-20T21:54:00Z", 
-#                 "start":"2021-02-09T16:17:00Z"}, 
-#                 {"db_name": "air_indoor_어린이집",
-#                 "measurement":"ICW0W2100152", 
-#                 "end": "2021-09-01T00:01:00Z", 
-#                 "start":"2021-02-09T16:17:00Z"}
-#                 ]
-#             }
-
-#     test = influxClient(ins)
-#     ms_dataset = test.get_MeasurementDataSet(intDataInfo)
-#     print(ms_dataset)
-#     print(type(ms_dataset))
+    
+    ms_dataset = test.get_MeasurementDataSet(intDataInfo)
+    print(ms_dataset)
+    print(type(ms_dataset))
+    '''
+    

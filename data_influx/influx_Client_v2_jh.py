@@ -7,26 +7,40 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(
 
 
 #if __name__ == "__main__":
-from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest
+from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
 
 #client = InfluxDBClient.from_config_file("config.ini") #?????
 
-bucket = "columntest"
+bucket = "writetest"
 url = "http://localhost:8086"
 token = "pM4K5ajbmvA4Tirzuzr3F1y0OF1KTNc0gsw5LGrZ-aT93y9KmoOgbqyX88aSZ73K27-nDVPwntfgd_W_cM5QJw=="
 org_name = "testorg"
 client = InfluxDBClient(url= url, token=token, org= org_name)
-measurement_name = "coltest"
+measurement_name = "wt1"
+
+
+
+
+
+
+
+
+### create bucket ------------------------------------
+# buckets_api = client.buckets_api()
+# new_bucket = buckets_api.create_bucket(bucket_name=bucket)
+
+
+
+
+
 
 
 ### Write ------------------------------------------------------------
-
-
 # BASE_DIR = os.getcwd()
-# df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/data_miss_original.csv"
+# df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/day_wise.csv"
 # input_file = os.path.join(BASE_DIR, df_file)
-# df = pd.read_csv(df_file, parse_dates=True, index_col ='timedate')
+# df = pd.read_csv(df_file, parse_dates=True, index_col ='Date')
 
 
 # # https://docs.influxdata.com/influxdb/v2.1/query-data/get-started/query-influxdb/
@@ -41,33 +55,46 @@ measurement_name = "coltest"
 
 
 
+
+
+
 ### Read InfluxDB Data(Flux query) -----------------------------------------------
 # 쿼리문 수정해야함
 query_client = client.query_api()
 
-query = 'import "date" from(bucket: "'+bucket+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "'+measurement_name+'") |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value") |> drop(columns: ["_start", "_stop"])'
-
-# query ='''
-# from(bucket: "example")
-#   |> range(start: 2021-01-29T00:00:00Z, stop: 2021-06-01T00:00:00Z)
-#   |> filter(fn: (r) => r._measurement == "test1")
-#   |> filter(fn: (r) => r._field == "co2")
-#   |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-#   |> yield(name: "mean")
+# query =f'''
+# from(bucket: "{bucket}")
+#   |> range(start: 0, stop: now())
+#   |> filter(fn: (r) => r._measurement == "{measurement_name}")
+#   |> drop(columns: ["_start", "_stop"])
 # '''
 
 # print(query)
 
-# querytest = 'from(bucket:"'+bucket+'")' \
+query = f'''
+from(bucket:"{bucket}")
+|> range(start: 0, stop: now())
+|> filter(fn: (r) => r._measurement == "{measurement_name}")
+|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+|> drop(columns: ["_start", "_stop"])
+'''
+
+# query = 'from(bucket:"'+bucket+'")' \
 #         '|> range(start: 0, stop: now()) ' \
 #         '|> filter(fn: (r) => r._measurement == "'+measurement_name+'")' \
+#         '|> filter(fn: (r) => r._field == "pm10")' \
 #         '|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")' \
-#         '|> drop(columns: ["_start", "_stop"])|> limit(n:10, offset: 0)' 
+#         '|> drop(columns: ["_start", "_stop"])'
+#         '|> limit(n:10, offset: 0)' 
+
 
 print(type(query))
 data_frame = query_client.query_data_frame(query)
 print(type(data_frame))
 print(data_frame)
+
+
+
 
 
 
@@ -92,16 +119,22 @@ print(data_frame)
 
 
 
-### Read meaasurements list --------------------------------------------
-# query2 ='import "influxdata/influxdb/schema" schema.measurements(bucket: "'+bucket+'")'
 
-# result = client.query_api().query(org=org_name,query=query2)
+
+
+
+### Read meaasurements list --------------------------------------------
+# query_result =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bucket}")'
+
+# result = client.query_api().query(org=org_name,query=query_result)
 # results = []
 # for table in result:
 #   for record in table.records:
 #     results.append(record.values["_value"])
 
 # print(results)
+
+
 
 
 
@@ -127,10 +160,29 @@ print(data_frame)
 
 
 
+### Read tagkeys ------------------------------------ 실행X
+
+# query_result = f'import "influxdata/influxdb/schema" schema.measurementFieldKeys(bucket: "{bucket}", measurement: "{measurement_name}")'
+# result = client.query_api().query(org=org_name,query=query_result)
+# print(type(result))
+# print(result)
+# print("-----------")
+# results = []
+# for table in result:
+#     print(table)
+#     for record in table.columns:
+#         results.append(record)
+
+# print(results)
+
+
+
+
+### Read fieldkeys ----------------------------------
+
 
 
 
 query_client.__del__()
-
 
 client.__del__()

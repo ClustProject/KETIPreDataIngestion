@@ -16,7 +16,6 @@ class influxClient2():
         self.influx_setting = influx_setting
         self.DBClient = InfluxDBClient(url=self.influx_setting.url_, token=self.influx_setting.token_, org=self.influx_setting.org_)
 
-        self.DBClient
 
     def get_BucketList(self):
         """
@@ -38,7 +37,7 @@ class influxClient2():
         get all measurement list of specific Bucket
         """
 
-        query ='import "influxdata/influxdb/schema" schema.measurements(bucket: "'+bk_name+'")'
+        query =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
 
         query_result = self.DBClient.query_api().query(query=query)
         ms_list = []
@@ -54,8 +53,7 @@ class influxClient2():
         get all field list of specific measurements
         """
 
-        query = 'from(bucket: "'+bk_name+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "'+ms_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
-
+        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
         query_result = self.DBClient.query_api().query(query=query)
         results = []
         for table in query_result:
@@ -73,12 +71,17 @@ class influxClient2():
         Get :guilabel:`all data` of the specific mearuement
         """
 
-        # 쿼리문 수정해야함
+        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
         query_client = self.DBClient.query_api()
-        query = 'from(bucket: "'+bk_name+'") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "'+ms_name+'") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)'
         data_frame = query_client.query_data_frame(query)
 
         return data_frame
+
+    
+    def switch_BK(self, bk_name):
+
+        self.bk_name = bk_name
+        self.DBClient
 
 
 

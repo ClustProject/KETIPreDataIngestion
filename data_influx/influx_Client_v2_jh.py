@@ -71,13 +71,13 @@ query_client = client.query_api()
 
 # print(query)
 
-query = f'''
-from(bucket:"{bucket}")
-|> range(start: 0, stop: now())
-|> filter(fn: (r) => r._measurement == "{measurement_name}")
-|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-|> drop(columns: ["_start", "_stop"])
-'''
+# query = f'''
+# from(bucket:"{bucket}")
+# |> range(start: 0, stop: now())
+# |> filter(fn: (r) => r._measurement == "{measurement_name}")
+# |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+# |> drop(columns: ["_start", "_stop"])
+# '''
 
 # query = 'from(bucket:"'+bucket+'")' \
 #         '|> range(start: 0, stop: now()) ' \
@@ -88,10 +88,10 @@ from(bucket:"{bucket}")
 #         '|> limit(n:10, offset: 0)' 
 
 
-print(type(query))
-data_frame = query_client.query_data_frame(query)
-print(type(data_frame))
-print(data_frame)
+# print(type(query))
+# data_frame = query_client.query_data_frame(query)
+# print(type(data_frame))
+# print(data_frame)
 
 
 
@@ -129,8 +129,13 @@ print(data_frame)
 # result = client.query_api().query(org=org_name,query=query_result)
 # results = []
 # for table in result:
+#   print("table")
+#   print(table)
 #   for record in table.records:
+#     print("record")
+#     print(record)
 #     results.append(record.values["_value"])
+
 
 # print(results)
 
@@ -142,20 +147,58 @@ print(data_frame)
 
 
 ### Read field, time, start, stop of specific measurement ---------------------------------
+# query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}")'
 # query_result = client.query_api().query(query=query)
 # results = []
 # for table in query_result:
 #   for record in table.records:
 #     #results.append((record.get_measurement(), record.get_field(), record.get_time(), record.get_start(), record.get_stop()))
-#     results.append(record.get_field())
+#     #results.append((record.get_field(), record.get_time()))
+#     results.append((record.get_field(), record.get_time()))
+#     #result_df = pd.DataFrame((record.get_field(),record.get_time()))
+
+#print(results[0])
+
 
 # result_set = set(results)
 # field_list = list(result_set)
 # print(type(field_list))
 # print(field_list)
 
-# for i in results:
-#   print(i)
+
+
+### Read first time of specific measurement ---------------------------------
+query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}") |> limit(n:1)'
+query_result = client.query_api().query(query=query)
+results = []
+for table in query_result:
+  aa = table.records
+  print(aa.get_time())
+  for record in table.records:
+    results.append(record.get_time())
+
+# first_time = str(results[0])
+
+# print(first_time)
+# print(type(first_time))
+
+
+
+# ### Read first time of specific measurement ---------------------------------
+# query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}") |> limit(n:1)'
+# query_result = client.query_api().query(query=query)
+# results = []
+# for table in query_result:
+#   for record in table.records:
+#     results.append(record.get_time())
+
+# print(results[0])
+
+
+
+
+
+
 
 
 

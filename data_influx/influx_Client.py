@@ -11,15 +11,11 @@ class influxClient():
 
     """
     def __init__(self, influx_setting):
-        if(type(influx_setting)==dict):
-            self.influx_setting = influx_setting
-            self.DBClient = InfluxDBClient(host=self.influx_setting['host_'], port=self.influx_setting['port_'], username=self.influx_setting['user_'], password = self.influx_setting['pass_'])
-            if "db_name" in self.influx_setting:
-                self.switch_DB(self.influx_setting['db_name'])
-        else:
-            self.influx_setting = influx_setting
-            self.DBClient = InfluxDBClient(host=self.influx_setting.host_, port=self.influx_setting.port_, username=self.influx_setting.user_, password = self.influx_setting.pass_)
-
+        self.influx_setting = influx_setting
+        self.DBClient = InfluxDBClient(host=self.influx_setting['host'], port=self.influx_setting['port'], username=self.influx_setting['user'], password = self.influx_setting['password'])
+        if "db_name" in self.influx_setting:
+            self.switch_DB(self.influx_setting['db_name'])
+       
     def get_DBList(self):
         """
         get all db List according to the influx setting
@@ -505,10 +501,9 @@ class influxClient():
     def write_db(self, df, table):
         """Write data to the influxdb
         """
-        if(type(self.influx_setting)==dict):
-            frameClient = DataFrameClient(self.influx_setting['host_'],self.influx_setting['port_'],self.influx_setting['user_'],self.influx_setting['pass_'],self.db_name)
-        else:
-            frameClient = DataFrameClient(self.influx_setting.host_,self.influx_setting.port_,self.influx_setting.user_,self.influx_setting.pass_,self.db_name)
+
+        frameClient = DataFrameClient(self.influx_setting['host'],self.influx_setting['port'],self.influx_setting['user'],self.influx_setting['password'],self.db_name)
+   
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
     
 
@@ -527,7 +522,7 @@ class influxClient():
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins)
+    test = influxClient(ins.CLUSTDataServer)
     db_name = "farm_inner_air"
     ms_name = "HS1"
     test.switch_DB(db_name)

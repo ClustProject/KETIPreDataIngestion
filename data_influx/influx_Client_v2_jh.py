@@ -12,12 +12,12 @@ from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
 
 #client = InfluxDBClient.from_config_file("config.ini") #?????
 
-bucket = "writetest"
+bk_name = "writetest"
 url = "http://localhost:8086"
 token = "pM4K5ajbmvA4Tirzuzr3F1y0OF1KTNc0gsw5LGrZ-aT93y9KmoOgbqyX88aSZ73K27-nDVPwntfgd_W_cM5QJw=="
-org_name = "testorg"
-client = InfluxDBClient(url= url, token=token, org= org_name)
-measurement_name = "wt1"
+org = "testorg"
+client = InfluxDBClient(url= url, token=token, org= org)
+ms_name = "wt1"
 
 
 
@@ -63,25 +63,25 @@ measurement_name = "wt1"
 query_client = client.query_api()
 
 # query =f'''
-# from(bucket: "{bucket}")
+# from(bucket: "{bk_name}")
 #   |> range(start: 0, stop: now())
-#   |> filter(fn: (r) => r._measurement == "{measurement_name}")
+#   |> filter(fn: (r) => r._measurement == "{ms_name}")
 #   |> drop(columns: ["_start", "_stop"])
 # '''
 
 # print(query)
 
 # query = f'''
-# from(bucket:"{bucket}")
+# from(bucket:"{bk_name}")
 # |> range(start: 0, stop: now())
-# |> filter(fn: (r) => r._measurement == "{measurement_name}")
+# |> filter(fn: (r) => r._measurement == "{ms_name}")
 # |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 # |> drop(columns: ["_start", "_stop"])
 # '''
 
-# query = 'from(bucket:"'+bucket+'")' \
+# query = 'from(bucket:"'+bk_name+'")' \
 #         '|> range(start: 0, stop: now()) ' \
-#         '|> filter(fn: (r) => r._measurement == "'+measurement_name+'")' \
+#         '|> filter(fn: (r) => r._measurement == "'+ms_name+'")' \
 #         '|> filter(fn: (r) => r._field == "pm10")' \
 #         '|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")' \
 #         '|> drop(columns: ["_start", "_stop"])'
@@ -101,7 +101,7 @@ query_client = client.query_api()
 
 
 
-### Read Bucket list -------------------------------------------
+# ## Read Bucket list -------------------------------------------
 # buckets_api = client.buckets_api()
 # buckets = buckets_api.find_buckets().buckets
 # # print("\n".join([f" ---------\n ID: {bucket.id}\n Name: {bucket.name}\n Retention: {bucket.retention_rules}"
@@ -120,11 +120,8 @@ query_client = client.query_api()
 
 
 
-
-
-
 ### Read meaasurements list --------------------------------------------
-# query_result =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bucket}")'
+# query_result =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
 
 # result = client.query_api().query(org=org_name,query=query_result)
 # results = []
@@ -144,10 +141,31 @@ query_client = client.query_api()
 
 
 
+# ###Read field, time, start, stop of specific measurement ---------------------------------
+# query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
+# query_result = client.query_api().query(query=query)
+# results = []
+# for table in query_result:
+#   for record in table.records:
+#     #results.append((record.get_measurement(), record.get_field(), record.get_time(), record.get_start(), record.get_stop()))
+#     #results.append((record.get_field(), record.get_time()))
+#     results.append(record.get_field())
+#     #result_df = pd.DataFrame((record.get_field(),record.get_time()))
+
+# result_set = set(results)
+# field_list = list(result_set)
+# print(type(field_list))
+# print(field_list)
 
 
-### Read field, time, start, stop of specific measurement ---------------------------------
-# query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}")'
+
+
+
+
+
+
+# ## Read field, time, start, stop of specific measurement ---------------------------------
+# query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
 # query_result = client.query_api().query(query=query)
 # results = []
 # for table in query_result:
@@ -157,7 +175,7 @@ query_client = client.query_api()
 #     results.append((record.get_field(), record.get_time()))
 #     #result_df = pd.DataFrame((record.get_field(),record.get_time()))
 
-#print(results[0])
+# print(results[0])
 
 
 # result_set = set(results)
@@ -167,34 +185,52 @@ query_client = client.query_api()
 
 
 
-### Read first time of specific measurement ---------------------------------
-query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}") |> limit(n:1)'
-query_result = client.query_api().query(query=query)
-results = []
-for table in query_result:
-  aa = table.records
-  print(aa.get_time())
-  for record in table.records:
-    results.append(record.get_time())
 
-# first_time = str(results[0])
 
-# print(first_time)
-# print(type(first_time))
+# ### Read first time of specific measurement ---------------------------------
+# query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> limit(n:1)'
+# query_result = client.query_api().query(query=query)
+# results = []
+# for table in query_result:
+#   aa = table.records
+#   print(aa.get_time())
+#   for record in table.records:
+#     results.append(record.get_time())
+
+# # first_time = str(results[0])
+
+# # print(first_time)
+# # print(type(first_time))
 
 
 
 # ### Read first time of specific measurement ---------------------------------
-# query = f'from(bucket: "{bucket}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{measurement_name}") |> limit(n:1)'
+# query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> limit(n:1)'
 # query_result = client.query_api().query(query=query)
 # results = []
 # for table in query_result:
 #   for record in table.records:
 #     results.append(record.get_time())
 
-# print(results[0])
+# first_time = results[0]
+
+# print(first_time)
 
 
+
+
+
+# ### Read last time of specific measurement ---------------------------------
+# query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> sort(desc:true) |> limit(n:1)'
+# query_result = client.query_api().query(query=query)
+# results = []
+# for table in query_result:
+#   for record in table.records:
+#     results.append(record.get_time())
+
+# last_time = results[0]
+
+# print(last_time)
 
 
 
@@ -205,7 +241,7 @@ for table in query_result:
 
 ### Read tagkeys ------------------------------------ 실행X
 
-# query_result = f'import "influxdata/influxdb/schema" schema.measurementFieldKeys(bucket: "{bucket}", measurement: "{measurement_name}")'
+# query_result = f'import "influxdata/influxdb/schema" schema.measurementFieldKeys(bucket: "{bk_name}", measurement: "{ms_name}")'
 # result = client.query_api().query(org=org_name,query=query_result)
 # print(type(result))
 # print(result)

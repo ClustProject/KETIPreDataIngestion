@@ -2,9 +2,8 @@ import sys
 import os
 import pandas as pd
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest
+from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
-
 
 
 class influxClient2():
@@ -14,12 +13,12 @@ class influxClient2():
 
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
-        self.DBClient = InfluxDBClient(url=self.influx_setting.url_, token=self.influx_setting.token_, org=self.influx_setting.org_)
+        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
 
 
-    def get_BucketList(self):
+    def get_DBList(self):
         """
-        get all bucket list
+        get all bucket(Database) list
         """
 
         buckets_api = self.DBClient.buckets_api()
@@ -32,7 +31,7 @@ class influxClient2():
         return bk_list    
 
 
-    def measurement_List(self, bk_name):
+    def measurement_list(self, bk_name):
         """
         get all measurement list of specific Bucket
         """
@@ -48,7 +47,7 @@ class influxClient2():
         return ms_list
 
 
-    def get_FieldList(self, bk_name, ms_name):
+    def get_fieldList(self, bk_name, ms_name):
         """
         get all field list of specific measurements
         """
@@ -58,15 +57,15 @@ class influxClient2():
         results = []
         for table in query_result:
             for record in table.records:
-                results.append(record.values["_value"])
+                results.append(record.get_field())
 
         result_set = set(results)
-        ms_list = list(result_set)
+        field_list = list(result_set)
 
-        return ms_list
+        return field_list
 
 
-    def get_Data(self, bk_name, ms_name):
+    def get_data(self, bk_name, ms_name):
         """
         Get :guilabel:`all data` of the specific mearuement
         """
@@ -77,16 +76,37 @@ class influxClient2():
 
         return data_frame
 
+
+    def get_data2(self, bk_name, ms_name):
+        """
+        Get :guilabel:`all data` of the specific mearuement, change dataframe
+        """
+        # 데이터 조회시, result, table을 제외시킬 수가 없음 -> 안보이게 하는 방법이 없나..?
+
+        query = f'''
+        from(bucket:"{bk_name}")
+        |> range(start: 0, stop: now())
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
+        '''
+
+        query_client = self.DBClient.query_api()
+        data_frame = query_client.query_data_frame(query)
+
+        return data_frame
+
+
     
     def measurement_list_only_start_end(self, bk_name):
         """
         Get the only start and end measurement name
         Use this function to reduce the DB load time.
         """
-
         # 1.8과 다르게 2.0부터는 get_list_measurements() 존재X
         # measurement 검색 쿼리 -> list[Fluxtable] -> measurement list -> 리스트 맨 앞,뒤 값 가져오기..?
         # list 길이가 1이면 하나만 저장, 2 이상이면 0, -1 위치 저장..?
+
         ms_list =[]
 
 
@@ -95,7 +115,6 @@ class influxClient2():
         Get measurement Data Set according to the dbinfo
         Each function makes dataframe output with "timedate" index.
         """
-
         # intDataInfo가 Dict로 들어오는데 2.0에서 어떻게 처리해야할지 모르겠음
 
 
@@ -110,16 +129,26 @@ class influxClient2():
         for table in query_result:
             for record in table.records:
                 results.append(record.get_time())
+            
+        first_time = results[0]
 
-        return results[0]
-
-
+        return first_time
 
 
     def get_last_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`last data` of the specific mearuement
         """
+        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> sort(desc:true) |> limit(n:1)'
+        query_result = self.DBClient.query_api().query(query=query)
+        results = []
+        for table in query_result:
+            for record in table.records:
+                results.append(record.get_time())
+
+        last_time = results[0]
+
+        return last_time
 
 
     def get_data_by_time(self, bind_params, bk_name, ms_name):
@@ -178,3 +207,36 @@ class influxClient2():
 
 
 
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient2(ins.LocalData)
+    bk_name="writetest"
+    ms_name="wt1"
+
+    bucket_list = test.get_DBList()
+    print("\n-----bucket list-----")
+    print(bucket_list)
+
+    measurement_list = test.measurement_list(bk_name)
+    print("\n-----measurement list-----")
+    print(measurement_list)
+
+    filed_list = test.get_fieldList(bk_name, ms_name)
+    print("\n-----field list-----")
+    print(filed_list)
+
+    data_get = test.get_data(bk_name, ms_name)
+    print("\n-----get_data-----")
+    print(data_get)
+
+    data_get2 = test.get_data2(bk_name, ms_name)
+    print("\n-----get_data2-----")
+    print(data_get2)
+
+    first_time = test.get_first_time(bk_name, ms_name)
+    print("\n-----first_time-----")
+    print(first_time)
+
+    last_time = test.get_last_time(bk_name, ms_name)
+    print("\n-----last_time-----")
+    print(last_time)

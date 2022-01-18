@@ -259,9 +259,9 @@ class influxClient2():
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient2(ins.LocalData)
-    bk_name="writetest"
-    ms_name="wt1"
+    test = influxClient2(ins.CLUSTLocalInflux)
+    bk_name="bio_covid_infected_korea"
+    ms_name="seoul_songpa"
 
     bucket_list = test.get_DBList()
     print("\n-----bucket list-----")
@@ -292,8 +292,8 @@ if __name__ == "__main__":
     print(last_time)
 
 
-    bind_params = {'start_time': first_time, 'end_time': last_time}
+    # bind_params = {'start_time': first_time, 'end_time': last_time}
 
-    time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
-    print(time_data.head())
-    print(time_data.tail())
+    # time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
+    # print(time_data.head())
+    # print(time_data.tail())

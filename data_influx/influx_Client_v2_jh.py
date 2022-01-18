@@ -237,6 +237,18 @@ print(first_time)
 
 
 
+# print(query_result)
+# query_result = self.DBClient.query_api().query_data_frame(query=query,data_frame_index=["_time"])
+        
+# print("query_result.index[0].value")
+# print(query_result.index[0].value)
+# print(type(query_result.index[0].value))
+
+# print("\nquery_result.index.values")
+# print(query_result.index.values)
+# print(type(query_result.index.values))
+
+
 
 
 

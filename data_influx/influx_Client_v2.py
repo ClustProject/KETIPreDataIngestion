@@ -6,7 +6,7 @@ from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostB
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
 
 
-class influxClient2():
+class influxClient():
     """
     Influx DB 2.0 Connection
     """
@@ -22,7 +22,8 @@ class influxClient2():
         """
 
         buckets_api = self.DBClient.buckets_api()
-        buckets = buckets_api.find_buckets().buckets
+        buckets = buckets_api.find_buckets(limit=100).buckets
+        # bucket list 보여주기 최대 100까지만 가능
 
         bk_list = []
         for bucket in buckets:
@@ -118,6 +119,7 @@ class influxClient2():
         # list 길이가 1이면 하나만 저장, 2 이상이면 0, -1 위치 저장..?
 
         ms_list =[]
+        ori_ms_list = self.DBClient.buckets_api()
 
 
     def get_first_time(self, bk_name, ms_name):
@@ -127,17 +129,18 @@ class influxClient2():
 
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}") 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
         |> limit(n:1)
         '''
         query_result = self.DBClient.query_api().query(query=query)
-        results = []
+
+        results =[]
         for table in query_result:
             for record in table.records:
-                results.append(record.get_time())
-            
-        first_time = str(results[0])
-        print(type(first_time))
+                results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+        first_time = results[0]
 
         return first_time
 
@@ -151,17 +154,22 @@ class influxClient2():
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}") 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
         |> sort(desc:true) 
         |> limit(n:1)
         '''
+
+        print("------------------ last time test test ---------------------")
         query_result = self.DBClient.query_api().query(query=query)
         results = []
         for table in query_result:
             for record in table.records:
-                results.append(record.get_time())
+                print(record)
+                results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+                print(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
 
-        last_time = str(results[0])
+        last_time = results[0]
 
         return last_time
 
@@ -172,28 +180,25 @@ class influxClient2():
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
         """
+        # 불러오는 start_time end_time 시간이 TZ 형식이 아니라서 오류 발생..?
+        # ex. TZ형식 -> 2020-02-28T10:00:000Z
+        #       현재 -> 2020-02-28 10:00:00+00:00
 
-        # query = f'''
-        # from(bucket: "{bk_name}") 
-        # |> range(start: $start, stop: $stop) 
-        # |> filter(fn: (r) => r._measurement == "{ms_name}") 
-        # '''
-
+        start_time = bind_params['start_time']
+        end_time = bind_params['end_time']
+        
         query = f'''
         from(bucket: "{bk_name}") 
-        |> range(start: $start_time, stop: $end_time) 
+        |> range(start: {start_time}, stop: {end_time}) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         #query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
         #ex> params = {'end_time':end_time, 'start_time': start_time}
-        start_time = bind_params['start_time']
-        end_time = bind_params['end_time']
-        data_frame = f'from(bucket: "{bk_name}") |> range(start: {start_time}, stop: {end_time}) |> filter(fn: (r) => r._measurement == "{ms_name}")'
-    
         
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-        
     
         return data_frame
 
@@ -260,28 +265,28 @@ class influxClient2():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient2(ins.CLUSTLocalInflux)
-    bk_name="bio_covid_infected_korea"
-    ms_name="seoul_songpa"
+    bk_name="bio_covid_infected_world"
+    ms_name="england"
 
-    bucket_list = test.get_DBList()
-    print("\n-----bucket list-----")
-    print(bucket_list)
+    # bucket_list = test.get_DBList()
+    # print("\n-----bucket list-----")
+    # print(bucket_list)
 
-    measurement_list = test.measurement_list(bk_name)
-    print("\n-----measurement list-----")
-    print(measurement_list)
+    # measurement_list = test.measurement_list(bk_name)
+    # print("\n-----measurement list-----")
+    # print(measurement_list)
 
-    filed_list = test.get_fieldList(bk_name, ms_name)
-    print("\n-----field list-----")
-    print(filed_list)
+    # filed_list = test.get_fieldList(bk_name, ms_name)
+    # print("\n-----field list-----")
+    # print(filed_list)
 
-    data_get = test.get_data(bk_name, ms_name)
-    print("\n-----get_data-----")
-    print(data_get)
+    # data_get = test.get_data(bk_name, ms_name)
+    # print("\n-----get_data-----")
+    # print(data_get)
 
-    data_get2 = test.get_data2(bk_name, ms_name)
-    print("\n-----get_data2-----")
-    print(data_get2)
+    # data_get2 = test.get_data2(bk_name, ms_name)
+    # print("\n-----get_data2-----")
+    # print(data_get2)
 
     first_time = test.get_first_time(bk_name, ms_name)
     print("\n-----first_time-----")
@@ -292,8 +297,8 @@ if __name__ == "__main__":
     print(last_time)
 
 
-    # bind_params = {'start_time': first_time, 'end_time': last_time}
+    bind_params = {'start_time': first_time, 'end_time': last_time}
 
-    # time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
-    # print(time_data.head())
-    # print(time_data.tail())
+    time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
+    print(time_data.head())
+    print(time_data.tail())

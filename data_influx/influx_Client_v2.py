@@ -52,7 +52,11 @@ class influxClient2():
         get all field list of specific measurements
         """
 
-        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        '''
         query_result = self.DBClient.query_api().query(query=query)
         results = []
         for table in query_result:
@@ -65,16 +69,22 @@ class influxClient2():
         return field_list
 
 
+
     def get_data(self, bk_name, ms_name):
         """
         Get :guilabel:`all data` of the specific mearuement
         """
 
-        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        '''
         query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query)
+        data_frame = query_client.query_data_frame(query=query,data_frame_index=["_time"])
 
         return data_frame
+
 
 
     def get_data2(self, bk_name, ms_name):
@@ -110,45 +120,51 @@ class influxClient2():
         ms_list =[]
 
 
-    def get_MeasurementDataSet(self, intDataInfo):
-        """
-        Get measurement Data Set according to the dbinfo
-        Each function makes dataframe output with "timedate" index.
-        """
-        # intDataInfo가 Dict로 들어오는데 2.0에서 어떻게 처리해야할지 모르겠음
-
-
     def get_first_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`first data` of the specific mearuement
         """
 
-        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> limit(n:1)'
+        query = f'''from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}") 
+        |> limit(n:1)
+        '''
         query_result = self.DBClient.query_api().query(query=query)
         results = []
         for table in query_result:
             for record in table.records:
                 results.append(record.get_time())
             
-        first_time = results[0]
+        first_time = str(results[0])
+        print(type(first_time))
 
         return first_time
+
 
 
     def get_last_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`last data` of the specific mearuement
         """
-        query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}") |> sort(desc:true) |> limit(n:1)'
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}") 
+        |> sort(desc:true) 
+        |> limit(n:1)
+        '''
         query_result = self.DBClient.query_api().query(query=query)
         results = []
         for table in query_result:
             for record in table.records:
                 results.append(record.get_time())
 
-        last_time = results[0]
+        last_time = str(results[0])
 
         return last_time
+
 
 
     def get_data_by_time(self, bind_params, bk_name, ms_name):
@@ -156,6 +172,40 @@ class influxClient2():
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
         """
+
+        # query = f'''
+        # from(bucket: "{bk_name}") 
+        # |> range(start: $start, stop: $stop) 
+        # |> filter(fn: (r) => r._measurement == "{ms_name}") 
+        # '''
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: $start_time, stop: $end_time) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        '''
+        #query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+        #ex> params = {'end_time':end_time, 'start_time': start_time}
+        start_time = bind_params['start_time']
+        end_time = bind_params['end_time']
+        data_frame = f'from(bucket: "{bk_name}") |> range(start: {start_time}, stop: {end_time}) |> filter(fn: (r) => r._measurement == "{ms_name}")'
+    
+        
+        query_client = self.DBClient.query_api()
+        data_frame = query_client.query_data_frame(query=query)
+        
+    
+        return data_frame
+
+
+
+    def get_MeasurementDataSet(self, intDataInfo):
+        """
+        Get measurement Data Set according to the dbinfo
+        Each function makes dataframe output with "timedate" index.
+        """
+        # intDataInfo가 Dict로 들어오는데 2.0에서 어떻게 처리해야할지 모르겠음
+
 
 
     def get_datafront_by_num(self, number, bk_name, ms_name):
@@ -240,3 +290,10 @@ if __name__ == "__main__":
     last_time = test.get_last_time(bk_name, ms_name)
     print("\n-----last_time-----")
     print(last_time)
+
+
+    bind_params = {'start_time': first_time, 'end_time': last_time}
+
+    time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
+    print(time_data.head())
+    print(time_data.tail())

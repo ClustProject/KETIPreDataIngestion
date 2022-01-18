@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 import sys
 import os
@@ -9,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(
 #if __name__ == "__main__":
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
-
+from influxdb_client.client.util.date_utils import get_date_helper
 #client = InfluxDBClient.from_config_file("config.ini") #?????
 
 bk_name = "writetest"
@@ -64,7 +65,7 @@ query_client = client.query_api()
 
 # query =f'''
 # from(bucket: "{bk_name}")
-#   |> range(start: 0, stop: now())
+#   |> range(start: 2020-01-14T13:31:59Z, stop: 2022-01-14T14:31:59Z)
 #   |> filter(fn: (r) => r._measurement == "{ms_name}")
 #   |> drop(columns: ["_start", "_stop"])
 # '''
@@ -163,7 +164,6 @@ query_client = client.query_api()
 
 
 
-
 # ## Read field, time, start, stop of specific measurement ---------------------------------
 # query = f'from(bucket: "{bk_name}") |> range(start: 0, stop: now()) |> filter(fn: (r) => r._measurement == "{ms_name}")'
 # query_result = client.query_api().query(query=query)
@@ -192,15 +192,51 @@ query_client = client.query_api()
 # query_result = client.query_api().query(query=query)
 # results = []
 # for table in query_result:
-#   aa = table.records
-#   print(aa.get_time())
 #   for record in table.records:
 #     results.append(record.get_time())
 
-# # first_time = str(results[0])
+# first_time= results[0]
 
-# # print(first_time)
-# # print(type(first_time))
+# print(first_time)
+# print(type(first_time))
+
+
+
+
+### first_time ver.2 -> 똑같은 값
+query = f'''
+from(bucket: "{bk_name}") 
+|> range(start: 0, stop: now()) 
+|> filter(fn: (r) => r._measurement == "{ms_name}")
+|> limit(n:1)
+'''
+query_result = client.query_api().query(query)
+# data_frame = query_client.query_data_frame(query=query,data_frame_index=["_time"])
+
+# print(data_frame)
+# print(type(data_frame))
+
+date_helper = get_date_helper()
+results = []
+for table in query_result:
+  for record in table.records:
+    print(record)
+    tt = record.get_time()
+    tata = date_helper.tt
+    # tz = datetime(tt, tzinfo=TZ()).isoformat()
+    print(tata)
+    results.append(tata)
+
+
+first_time= results[0]
+
+print(type(first_time))
+print(first_time)
+
+
+
+
+
 
 
 

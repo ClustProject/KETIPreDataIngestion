@@ -313,3 +313,115 @@ print(first_time)
 query_client.__del__()
 
 client.__del__()
+
+
+
+
+
+
+
+
+
+
+
+
+
+### =============================== influx_Client_v2 수정 전 코드 ==============================
+
+
+
+    # def measurement_list(self, bk_name):
+    #     """
+    #     get all measurement list of specific Bucket
+    #     """
+
+    #     query =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
+
+    #     query_result = self.DBClient.query_api().query(query=query)
+    #     ms_list = []
+    #     for table in query_result:
+    #         for record in table.records:
+    #             ms_list.append(record.values["_value"])
+
+    #     return ms_list
+
+
+
+
+
+    # def get_fieldList(self, bk_name, ms_name):
+    #     """
+    #     get all field list of specific measurements
+    #     """
+
+    #     query = f'''
+    #     from(bucket: "{bk_name}") 
+    #     |> range(start: 0, stop: now()) 
+    #     |> filter(fn: (r) => r._measurement == "{ms_name}")
+    #     '''
+    #     query_result = self.DBClient.query_api().query(query=query)
+    #     results = []
+    #     for table in query_result:
+    #         for record in table.records:
+    #             results.append(record.get_field())
+
+    #     result_set = set(results)
+    #     field_list = list(result_set)
+
+    #     return field_list
+
+
+
+
+
+
+        # def get_first_time(self, bk_name, ms_name):
+    #     """
+    #     Get the :guilabel:`first data` of the specific mearuement
+    #     """
+
+    #     query = f'''from(bucket: "{bk_name}") 
+    #     |> range(start: 0, stop: now()) 
+    #     |> filter(fn: (r) => r._measurement == "{ms_name}")
+    #     |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
+    #     |> limit(n:1)
+    #     '''
+    #     query_result = self.DBClient.query_api().query(query=query)
+
+    #     results =[]
+    #     for table in query_result:
+    #         for record in table.records:
+    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+    #     first_time = results[0]
+
+    #     return first_time
+
+
+
+
+
+
+        # def get_last_time(self, bk_name, ms_name):
+    #     """
+    #     Get the :guilabel:`last data` of the specific mearuement
+    #     """
+
+    #     query = f'''
+    #     from(bucket: "{bk_name}") 
+    #     |> range(start: 0, stop: now()) 
+    #     |> filter(fn: (r) => r._measurement == "{ms_name}")
+    #     |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
+    #     |> sort(desc:true) 
+    #     |> limit(n:1)
+    #     '''
+
+    #     query_result = self.DBClient.query_api().query(query=query)
+    #     results = []
+    #     for table in query_result:
+    #         for record in table.records:
+    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+    #     last_time = results[1]
+
+    #     return last_time

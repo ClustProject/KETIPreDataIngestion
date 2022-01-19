@@ -336,12 +336,22 @@ class influxClient():
 
 
 
-    def write_db(self, df, table):
+    def write_db(self, bk_name, ms_name, df):
         """Write data to the influxdb
         """
         # .....?
         write_client = self.DBClient.write_api(write_options= ASYNCHRONOUS)
-        write_client.write(self.db_name, record=df, data_frame_measurement_name=table)
+        self.create_bucket(bk_name)
+        write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
+        print("========== write success ==========")
+        self.DBClient.close()
+
+
+    
+    def create_bucket(self, bk_name):
+        buckets_api = self.DBClient.buckets_api()
+        buckets_api.create_bucket(bucket_name=bk_name)
+        print("========== create bucket ==========")
 
 
 
@@ -417,3 +427,12 @@ if __name__ == "__main__":
     # print("====================================")
     # ms_lse = test.measurement_list_only_start_end(bk_name)
     # print(ms_lse)
+
+    # BASE_DIR = os.getcwd()
+    # df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/day_wise.csv"
+    # input_file = os.path.join(BASE_DIR, df_file)
+    # df = pd.read_csv(df_file, parse_dates=True, index_col ='Date')
+    
+    # cr_bk = "test1234567"
+    # cr_ms = "test1"
+    # test.write_db(cr_bk, cr_ms, df)

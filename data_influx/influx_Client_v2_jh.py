@@ -326,7 +326,9 @@ client.__del__()
 
 
 
+
 ### =============================== influx_Client_v2 수정 전 코드 ==============================
+
 
 
 
@@ -425,3 +427,56 @@ client.__del__()
     #     last_time = results[1]
 
     #     return last_time
+
+
+    
+
+
+        # def get_data(self, bk_name, ms_name):
+    #     """
+    #     Get :guilabel:`all data` of the specific mearuement
+    #     """
+
+    #     query = f'''
+    #     from(bucket: "{bk_name}") 
+    #     |> range(start: 0, stop: now()) 
+    #     |> filter(fn: (r) => r._measurement == "{ms_name}")
+    #     '''
+
+    #     query_client = self.DBClient.query_api()
+    #     data_frame = query_client.query_data_frame(query=query,data_frame_index=["_time"])
+
+    #     return data_frame
+
+
+
+
+
+        # def cleanup_df(self, df):
+    #     """
+    #     Clean data, remove duplication, Sort, Set index (datetime)
+    #     """
+    #     import numpy as np
+    #     df = df.drop(['result','table'], axis=1)
+    #     print("===== drop result table =====")
+    #     print(df)
+    #     df = df.set_index('_time')
+    #     print("===== set index time =====")
+    #     print(df)
+    #     df = df.groupby(df.index).first()
+    #     print("===== groupby index first =====")
+    #     print(df)
+    #     df.index = pd.to_datetime(df.index).strftime('%Y-%m-%dT%H:%M:%SZ')#).astype('int64'))
+    #     print("===== to datetime =====")
+    #     print(df)
+    #     # df = df.drop_duplicates(keep='first') # value값에 같은 값이 있는 행을 제거하는 현상 발생
+    #     # print("===== duplicates =====")
+    #     # print(df)
+    #     df = df.sort_index(ascending=True)
+    #     print("===== sort index =====")
+    #     print(df)
+    #     df.replace("", np.nan, inplace=True)
+    #     print("===== nan inplace =====")
+    #     print(df)
+
+    #     return df

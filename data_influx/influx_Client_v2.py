@@ -41,6 +41,7 @@ class influxClient():
 
         query =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
 
+
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         ms_list = list(query_result["_value"])
 
@@ -142,7 +143,7 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> sort(desc:true) 
+        |> sort(columns: ["_time"], desc:true) 
         |> limit(n:1)
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
@@ -219,19 +220,19 @@ class influxClient():
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> limit(n:{number})
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> limit(n:{number})
         '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
 
-        data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
+        data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
 
-
+        
     def get_dataend_by_num(self, number, bk_name, ms_name):
         """
         Get the :guilabel:`last N number` data from the specific measurement
@@ -241,15 +242,15 @@ class influxClient():
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> sort(desc:true)
-        |> limit(n:{number})
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> sort(columns: ["_time"], desc:true)
+        |> limit(n:{number})
         '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
 
-        data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
+        data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
@@ -279,7 +280,7 @@ class influxClient():
         df = df.drop(['result','table'], axis=1)
         df = df.set_index('_time')
         df = df.groupby(df.index).first()
-        df.index = pd.to_datetime(df.index).strftime('%Y-%m-%dT%H:%M:%SZ')#).astype('int64'))
+        df.index = pd.to_datetime(df.index)#).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
 
@@ -329,7 +330,7 @@ class influxClient():
 
 
 
-    def get_freq(self, bk_name, ms_name): # 오류 발생, 원인 미확인
+    def get_freq(self, bk_name, ms_name): # 해결
         """
         """
         data = self.get_datafront_by_num(10, bk_name, ms_name)
@@ -381,8 +382,8 @@ class influxClient():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTLocalInflux)
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
+    bk_name="farm_strawberry_awon"
+    ms_name="environment"
     # bk_name="farm_strawberry_awon"
     # ms_name="environment"
     # bk_name="writetest"
@@ -404,13 +405,13 @@ if __name__ == "__main__":
     # print("\n-----get_data-----")
     # print(data_get)
 
-    # first_time = test.get_first_time(bk_name, ms_name)
-    # print("\n-----first_time-----")
-    # print(first_time)
+    first_time = test.get_first_time(bk_name, ms_name)
+    print("\n-----first_time-----")
+    print(first_time)
 
-    # last_time = test.get_last_time(bk_name, ms_name)
-    # print("\n-----last_time-----")
-    # print(last_time)
+    last_time = test.get_last_time(bk_name, ms_name)
+    print("\n-----last_time-----")
+    print(last_time)
 
     # days = 7
     # bind_params = {'start_time': first_time, 'end_time': last_time, "days":str(days)+"d"}
@@ -418,14 +419,17 @@ if __name__ == "__main__":
     # print(time_data.head())
     # print(time_data.tail())
 
-    # datafront = test.get_datafront_by_num(10,bk_name, ms_name)
-    # print(datafront)
+    datafront = test.get_datafront_by_num(10,bk_name, ms_name)
+    print("===== datafront =====")
+    print(datafront)
 
-    # dataend = test.get_dataend_by_num(10, bk_name, ms_name)
-    # print(dataend)
+    dataend = test.get_dataend_by_num(10, bk_name, ms_name)
+    print("===== dataend =====")
+    print(dataend)
 
-    # datafreq = test.get_freq(bk_name, ms_name)
-    # print(datafreq)
+    datafreq = test.get_freq(bk_name, ms_name)
+    print("===== datafreq =====")
+    print(datafreq)
 
     # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
     # print(datadays)

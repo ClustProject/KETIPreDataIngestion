@@ -534,6 +534,7 @@ if __name__ == "__main__":
     rr= pd.to_datetime(rr)
     lastDay = rr.strftime('%Y%m%d')
     print(lastDay)
+
     '''
     intDataInfo = {"db_info":
                 [

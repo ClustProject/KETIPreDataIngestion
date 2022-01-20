@@ -203,35 +203,35 @@ query_client = client.query_api()
 
 
 
-### first_time ver.2 -> 똑같은 값
-query = f'''
-from(bucket: "{bk_name}") 
-|> range(start: 0, stop: now()) 
-|> filter(fn: (r) => r._measurement == "{ms_name}")
-|> limit(n:1)
-'''
-query_result = client.query_api().query(query)
-# data_frame = query_client.query_data_frame(query=query,data_frame_index=["_time"])
+# ### first_time ver.2 -> 똑같은 값
+# query = f'''
+# from(bucket: "{bk_name}") 
+# |> range(start: 0, stop: now()) 
+# |> filter(fn: (r) => r._measurement == "{ms_name}")
+# |> limit(n:1)
+# '''
+# query_result = client.query_api().query(query)
+# # data_frame = query_client.query_data_frame(query=query,data_frame_index=["_time"])
 
-# print(data_frame)
-# print(type(data_frame))
+# # print(data_frame)
+# # print(type(data_frame))
 
-date_helper = get_date_helper()
-results = []
-for table in query_result:
-  for record in table.records:
-    print(record)
-    tt = record.get_time()
-    tata = date_helper.tt
-    # tz = datetime(tt, tzinfo=TZ()).isoformat()
-    print(tata)
-    results.append(tata)
+# date_helper = get_date_helper()
+# results = []
+# for table in query_result:
+#   for record in table.records:
+#     print(record)
+#     tt = record.get_time()
+#     tata = date_helper.tt
+#     # tz = datetime(tt, tzinfo=TZ()).isoformat()
+#     print(tata)
+#     results.append(tata)
 
 
-first_time= results[0]
+# first_time= results[0]
 
-print(type(first_time))
-print(first_time)
+# print(type(first_time))
+# print(first_time)
 
 
 
@@ -480,3 +480,31 @@ client.__del__()
     #     print(df)
 
     #     return df
+
+
+
+if __name__ == "__main__":
+    import numpy as np
+    from datetime import datetime
+    # startdate = datetime.datetime(2001, 1, 1, 0, 0)
+    # enddate = datetime.datetime(2001, 1, 1, 5, 0)
+    # index = pd.DatetimeIndex(start=startdate, end=enddate, freq='H')
+    # data1 = {'A' : range(6), 'B' : range(6)}
+    # data2 = {'A' : [20, -30, 40], 'B' : [-50, 60, -70]}
+    # df1 = pd.DataFrame(data=data1, index=index)
+    # df2 = pd.DataFrame(data=data2, index=index[:3])
+    # df3 = df2.append(df1)
+
+    date_str = ["2018, 1, 1","2018, 1, 1","2018, 1, 2", "2018, 1, 4", "2018, 1, 5", "2018, 1, 6", "2018, 1, 6" ,"2018, 1, 7"]
+    idx = pd.to_datetime(date_str)
+    print(idx)
+    np.random.seed(0)
+    df = pd.DataFrame(np.random.randn(8), index=idx)
+    print(df)
+    print("==============================")
+    print(df.index)
+    print(type(df.index))
+    print("==============================")
+    df = df[~df.index.duplicated(keep='first')]
+    print(df)
+

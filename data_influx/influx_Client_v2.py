@@ -1,6 +1,8 @@
+from operator import index
 import sys
 import os
 import pandas as pd
+from sqlalchemy import false
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
@@ -23,8 +25,7 @@ class influxClient():
         """
 
         buckets_api = self.DBClient.buckets_api()
-        buckets = buckets_api.find_buckets(limit=100).buckets
-        # bucket list 보여주기 최대 100까지만 가능
+        buckets = buckets_api.find_buckets(limit=100).buckets # bucket list 보여주기 최대 100까지만 가능
 
         bk_list = []
         for bucket in buckets:
@@ -40,8 +41,6 @@ class influxClient():
         """
 
         query =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
-
-
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         ms_list = list(query_result["_value"])
 
@@ -83,7 +82,6 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         '''
-
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         field_result = set(query_result["_field"])
         field_list = list(field_result)
@@ -105,10 +103,8 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query)
-
         data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
 
         return data_frame
@@ -177,7 +173,6 @@ class influxClient():
         
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-
         data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
     
         return data_frame
@@ -204,7 +199,6 @@ class influxClient():
         
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-
         data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
     
         return data_frame
@@ -226,7 +220,6 @@ class influxClient():
         '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
@@ -249,10 +242,76 @@ class influxClient():
         '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
+
+
+
+
+    def cleanup_df(self, df):
+        """
+        Clean data, remove duplication, Sort, Set index (datetime)
+        """
+        import numpy as np
+        df = df.drop(['result','table'], axis=1)
+        df = df.set_index('_time')
+        df = df.groupby(df.index).first()
+        df.index = pd.to_datetime(df.index)#).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
+        df = df[~df.index.duplicated(keep='first')] # index의 중복된 행 중 첫째행을 제외한 나머지 행 삭제
+        df = df.sort_index(ascending=True)
+        df.replace("", np.nan, inplace=True)
+        # 1.8코드에서는 time 컬럼의 값은 str
+        # 현재 2.0 코드에서는 time 컬럼의 값은 timestamp
+        return df
+
+
+        
+    def get_freq(self, bk_name, ms_name): # 해결
+        """
+        """
+        data = self.get_datafront_by_num(10, bk_name, ms_name)
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
+        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
+
+
+
+    def get_df_by_timestamp(self, bk_name, ms_name, time_start, time_end):
+        """
+        It returns a table that has data on a measurement(table) in the database from time_start to time_end.
+        """
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: {time_start}, stop: {time_end}) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        query_client = self.DBClient.query_api()
+        data_frame = query_client.query_data_frame(query)
+        data_frame = self.cleanup_df(data_frame)
+
+        return data_frame
+
+
+
+    def write_db(self, bk_name, ms_name, data_frame): # 파라미터 추가
+        """Write data to the influxdb
+        """
+        # .....?
+        write_client = self.DBClient.write_api(write_options= ASYNCHRONOUS)
+        self.create_bucket(bk_name)
+        write_client.write(bucket=bk_name, record=data_frame, data_frame_measurement_name=ms_name)
+        print("========== write success ==========")
+        self.DBClient.close()
+
+
+    
+    def create_bucket(self, bk_name): # write_db 수행 시, bucket 생성 필요
+        buckets_api = self.DBClient.buckets_api()
+        buckets_api.create_bucket(bucket_name=bk_name)
+        print("========== create bucket ==========")
 
 
 
@@ -272,85 +331,18 @@ class influxClient():
 
 
 
-    def cleanup_df(self, df):
-        """
-        Clean data, remove duplication, Sort, Set index (datetime)
-        """
-        import numpy as np
-        df = df.drop(['result','table'], axis=1)
-        df = df.set_index('_time')
-        df = df.groupby(df.index).first()
-        df.index = pd.to_datetime(df.index)#).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
-        df = df.sort_index(ascending=True)
-        df.replace("", np.nan, inplace=True)
-
-        return df
-
-
-
-
-    def get_df_by_timestamp(self, bk_name, ms_name, time_start, time_end):
-        """
-        It returns a table that has data on a measurement(table) in the database from time_start to time_end.
-        """
-
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: {time_start}, stop: {time_end}) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement", "result", "table"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
-
-        query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query)
-
-        data_frame = self.cleanup_df(data_frame)
-
-        return data_frame
-
-
-
-    def write_db(self, bk_name, ms_name, df):
-        """Write data to the influxdb
-        """
-        # .....?
-        write_client = self.DBClient.write_api(write_options= ASYNCHRONOUS)
-        self.create_bucket(bk_name)
-        write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
-        print("========== write success ==========")
-        self.DBClient.close()
-
-
-    
-    def create_bucket(self, bk_name):
-        buckets_api = self.DBClient.buckets_api()
-        buckets_api.create_bucket(bucket_name=bk_name)
-        print("========== create bucket ==========")
-
-
-
-    def get_freq(self, bk_name, ms_name): # 해결
-        """
-        """
-        data = self.get_datafront_by_num(10, bk_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
-
-
-
-
     def get_TagValue(self, bk_name, ms_name, tag_key):
         """
         Get :guilabel:`unique value` of selected tag key
         """
-        # 값이 안 나오는 이유를 못 찾고 있음
+        # 값이 왜 없지..?
 
         query = f'''
         import "influxdata/influxdb/schema"
         schema.measurementTagValues(bucket: "{bk_name}", measurement: "{ms_name}", tag: "{tag_key}")
         '''
         tag_value = self.DBClient.query_api().query(query=query)
+        print(tag_value)
 
         return tag_value
 
@@ -382,10 +374,10 @@ class influxClient():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTLocalInflux)
+    # bk_name="bio_covid_infected_world"
+    # ms_name="england"
     bk_name="farm_strawberry_awon"
     ms_name="environment"
-    # bk_name="farm_strawberry_awon"
-    # ms_name="environment"
     # bk_name="writetest"
     # ms_name="wt1"
 
@@ -401,17 +393,17 @@ if __name__ == "__main__":
     # print("\n-----field list-----")
     # print(filed_list)
 
-    # data_get = test.get_data(bk_name, ms_name)
-    # print("\n-----get_data-----")
-    # print(data_get)
+    data_get = test.get_data(bk_name, ms_name)
+    print("\n-----get_data-----")
+    print(data_get)
 
-    first_time = test.get_first_time(bk_name, ms_name)
-    print("\n-----first_time-----")
-    print(first_time)
+    # first_time = test.get_first_time(bk_name, ms_name)
+    # print("\n-----first_time-----")
+    # print(first_time)
 
-    last_time = test.get_last_time(bk_name, ms_name)
-    print("\n-----last_time-----")
-    print(last_time)
+    # last_time = test.get_last_time(bk_name, ms_name)
+    # print("\n-----last_time-----")
+    # print(last_time)
 
     # days = 7
     # bind_params = {'start_time': first_time, 'end_time': last_time, "days":str(days)+"d"}
@@ -419,17 +411,18 @@ if __name__ == "__main__":
     # print(time_data.head())
     # print(time_data.tail())
 
-    datafront = test.get_datafront_by_num(10,bk_name, ms_name)
-    print("===== datafront =====")
-    print(datafront)
+    # datafront = test.get_datafront_by_num(10,bk_name, ms_name)
+    # print("===== datafront =====")
+    # print(datafront)
 
-    dataend = test.get_dataend_by_num(10, bk_name, ms_name)
-    print("===== dataend =====")
-    print(dataend)
+    # dataend = test.get_dataend_by_num(10, bk_name, ms_name)
+    # print("===== dataend =====")
+    # print(dataend)
 
-    datafreq = test.get_freq(bk_name, ms_name)
-    print("===== datafreq =====")
-    print(datafreq)
+    # datafreq = test.get_freq(bk_name, ms_name)
+    # print("===== datafreq =====")
+    # print(datafreq)
+
 
     # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
     # print(datadays)

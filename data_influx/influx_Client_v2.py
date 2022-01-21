@@ -352,7 +352,7 @@ class influxClient():
         return tag_value
 
 
-
+    # 추후 수정
     def get_TagGroupData(self, bk_name, ms_name, tag_key, tag_value):
         """
         Get :guilabel:`tag value` set by tag key
@@ -364,7 +364,9 @@ class influxClient():
         print(df)
         return df
 
-    #TODO Modify (JW) Not Working 
+
+
+    # TODO Define Guard code for ms without tags
     def get_MeasurementDataSet(self, intDataInfo):
         """
         Get measurement Data Set according to the dbinfo

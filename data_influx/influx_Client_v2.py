@@ -1,8 +1,8 @@
 from operator import index
 import sys
 import os
+from turtle import bk
 import pandas as pd
-from sqlalchemy import false
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
@@ -31,6 +31,11 @@ class influxClient():
         for bucket in buckets:
             bk_list.append(bucket.name)
 
+        ## query 버전
+        # query =f'buckets()'
+        # query_result = self.DBClient.query_api().query_data_frame(query=query)
+        # bk_list = list(query_result["name"])
+
         return bk_list    
 
 
@@ -43,6 +48,7 @@ class influxClient():
         query =f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         ms_list = list(query_result["_value"])
+
 
         return ms_list
 
@@ -94,7 +100,6 @@ class influxClient():
         """
         Get :guilabel:`all data` of the specific mearuement, change dataframe
         """
-        # 데이터 조회시, result, table을 제외시킬 수가 없음 -> 안보이게 하는 방법이 없나..?
 
         query = f'''
         from(bucket:"{bk_name}")
@@ -105,7 +110,7 @@ class influxClient():
         '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query)
-        data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
+        data_frame = self.cleanup_df(data_frame) 
 
         return data_frame
 
@@ -115,12 +120,11 @@ class influxClient():
         """
         Get the :guilabel:`first data` of the specific mearuement
         """
-
+        # first() - 테이블에서 첫번째 레코드 반환
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> limit(n:1)
+        |> first(column: "_time")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -128,7 +132,7 @@ class influxClient():
         return first_time
 
 
-
+        # last() - 테이블에서 마지막 레코드 반환
     def get_last_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`last data` of the specific mearuement
@@ -138,9 +142,7 @@ class influxClient():
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> sort(columns: ["_time"], desc:true) 
-        |> limit(n:1)
+        |> last(column: "_time")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -388,26 +390,25 @@ class influxClient():
             MSdataSet[i].index.name ='datetime'
         return MSdataSet
 
+
+
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    print(ins.CLUSTLocalInflux)
     test = influxClient(ins.CLUSTLocalInflux)
-    bk_name="finance_korean_stock"
-    ms_name="stock"   
-    # bk_name="bio_covid_infected_world"
-    # ms_name="england"
     # bk_name="farm_strawberry_awon"
-    # ms_name="environment"
+    # ms_name="environment"   
+    bk_name="bio_covid_infected_world"
+    ms_name="england"
     # bk_name="writetest"
     # ms_name="wt1"
 
-    # bucket_list = test.get_DBList()
-    # print("\n-----bucket list-----")
-    # print(bucket_list)
+    bucket_list = test.get_DBList()
+    print("\n-----bucket list-----")
+    print(bucket_list)
 
-    # measurement_list = test.measurement_list(bk_name)
-    # print("\n-----measurement list-----")
-    # print(measurement_list)
+    measurement_list = test.measurement_list(bk_name)
+    print("\n-----measurement list-----")
+    print(measurement_list)
 
     # filed_list = test.get_fieldList(bk_name, ms_name)
     # print("\n-----field list-----")
@@ -447,14 +448,14 @@ if __name__ == "__main__":
     # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
     # print(datadays)
 
-    tag_list = test.get_tagList(bk_name, ms_name)
-    print("===== tag list =====")
-    print(tag_list)
+    # tag_list = test.get_tagList(bk_name, ms_name)
+    # print("===== tag list =====")
+    # print(tag_list)
 
-    tag_key = 'company'
-    tag_value = test.get_TagValue(bk_name, ms_name, tag_key)
-    print("===== tag key value =====")
-    print(tag_value)
+    # tag_key = 'company'
+    # tag_value = test.get_TagValue(bk_name, ms_name, tag_key)
+    # print("===== tag key value =====")
+    # print(tag_value)
 
     # print("====================================")
     # ms_lse = test.measurement_list_only_start_end(bk_name)

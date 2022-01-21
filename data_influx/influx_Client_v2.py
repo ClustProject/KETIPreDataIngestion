@@ -335,14 +335,17 @@ class influxClient():
         """
         Get :guilabel:`unique value` of selected tag key
         """
-        # 값이 왜 없지..?
 
         query = f'''
-        import "influxdata/influxdb/schema"
-        schema.measurementTagValues(bucket: "{bk_name}", measurement: "{ms_name}", tag: "{tag_key}")
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-        tag_value = self.DBClient.query_api().query(query=query)
-        print(tag_value)
+
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        tag_value = list(query_result["_value"])
 
         return tag_value
 
@@ -352,15 +355,39 @@ class influxClient():
         """
         Get :guilabel:`tag value` set by tag key
         """
-
+        query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
+        print(query_string)
+        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
+        df = self.cleanup_df(df)
+        print(df)
+        return df
 
 
     def get_MeasurementDataSet(self, intDataInfo):
         """
         Get measurement Data Set according to the dbinfo
         Each function makes dataframe output with "timedate" index.
+
+        :param intDataInfo: intDataInfo
+        :type intDataInfo: dic
+
+        :return: MSdataset
+        :rtype: Dict
         """
         # intDataInfo가 Dict로 들어오는데 2.0에서 어떻게 처리해야할지 모르겠음
+        MSdataSet ={}
+        print(intDataInfo)
+        for i, dbinfo in enumerate(intDataInfo['db_info']):
+            print(i)
+            print(dbinfo)
+            db_name = dbinfo['db_name']
+            ms_name = dbinfo['measurement']
+            self.switch_MS(db_name, ms_name)
+            bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
+            MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
+            MSdataSet[i].index.name ='datetime'
+
+        return MSdataSet
 
 
 
@@ -374,10 +401,12 @@ class influxClient():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTLocalInflux)
+    bk_name="finance_korean_stock"
+    ms_name="stock"   
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
-    bk_name="farm_strawberry_awon"
-    ms_name="environment"
+    # bk_name="farm_strawberry_awon"
+    # ms_name="environment"
     # bk_name="writetest"
     # ms_name="wt1"
 
@@ -427,12 +456,14 @@ if __name__ == "__main__":
     # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
     # print(datadays)
 
-    # tag_keys = test.get_tagList(bk_name, ms_name)
-    # print(tag_keys)
+    tag_list = test.get_tagList(bk_name, ms_name)
+    print("===== tag list =====")
+    print(tag_list)
 
-    # tag_key = '_start'
-    # tag_value = test.get_TagValue(bk_name, ms_name, tag_key)
-    # print(tag_value)
+    tag_key = 'company'
+    tag_value = test.get_TagValue(bk_name, ms_name, tag_key)
+    print("===== tag key value =====")
+    print(tag_value)
 
     # print("====================================")
     # ms_lse = test.measurement_list_only_start_end(bk_name)

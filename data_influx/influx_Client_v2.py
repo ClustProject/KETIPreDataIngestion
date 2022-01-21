@@ -275,11 +275,11 @@ class influxClient():
         return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
 
 
-
+    """
     def get_df_by_timestamp(self, bk_name, ms_name, time_start, time_end):
-        """
-        It returns a table that has data on a measurement(table) in the database from time_start to time_end.
-        """
+        
+        # It returns a table that has data on a measurement(table) in the database from time_start to time_end.
+        
 
         query = f'''
         from(bucket: "{bk_name}") 
@@ -293,9 +293,8 @@ class influxClient():
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
-
-
-
+    """
+    
     def write_db(self, bk_name, ms_name, data_frame): # 파라미터 추가
         """Write data to the influxdb
         """
@@ -345,6 +344,7 @@ class influxClient():
         '''
 
         query_result = self.DBClient.query_api().query_data_frame(query=query)
+        print(query_result)
         tag_value = list(query_result["_value"])
 
         return tag_value
@@ -362,7 +362,7 @@ class influxClient():
         print(df)
         return df
 
-
+    #TODO Modify (JW) Not Working 
     def get_MeasurementDataSet(self, intDataInfo):
         """
         Get measurement Data Set according to the dbinfo
@@ -386,20 +386,11 @@ class influxClient():
             bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
             MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
             MSdataSet[i].index.name ='datetime'
-
         return MSdataSet
-
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    print(ins.CLUSTLocalInflux)
     test = influxClient(ins.CLUSTLocalInflux)
     bk_name="finance_korean_stock"
     ms_name="stock"   

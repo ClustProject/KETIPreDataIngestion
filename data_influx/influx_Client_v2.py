@@ -33,11 +33,6 @@ class influxClient():
         for bucket in buckets:
             bk_list.append(bucket.name)
 
-        ## query 버전
-        # query =f'buckets()'
-        # query_result = self.DBClient.query_api().query_data_frame(query=query)
-        # bk_list = list(query_result["name"])
-
         return bk_list    
 
 
@@ -81,8 +76,6 @@ class influxClient():
         """
         get all field list of specific measurements
         """
-        # import time
-        # start = time.time()
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -90,25 +83,10 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
-        # query = f'import "influxdata/influxdb/schema" schema.measurementFieldKeys(bucket: "{bk_name}", measurement: "{ms_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-
-        # results=[]
-        # for table in query_result:
-        #     print(table.columns)
-        #     for record in table.records:
-        #         print(record)
-        #         results.append(record.field())
-        # field_list = list(query_result["_value"])
-
         query_result = self.cleanup_df(query_result)
         field_list = list(query_result.columns)
 
-        # end = time.time()
-        # print("============time=================")
-        # print(end - start)
-        
         return field_list
 
 
@@ -131,12 +109,11 @@ class influxClient():
         return data_frame
 
 
-
+        # first() - 테이블에서 첫번째 레코드 반환
     def get_first_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`first data` of the specific mearuement
         """
-        # first() - 테이블에서 첫번째 레코드 반환
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
@@ -174,7 +151,6 @@ class influxClient():
         # 불러오는 start_time end_time 시간이 TZ 형식이 아니라서 오류 발생..?
         # ex. TZ형식 -> 2020-02-28T10:00:000Z
         #       현재 -> 2020-02-28 10:00:00+00:00
-
         start_time = bind_params['start_time']
         end_time = bind_params['end_time']
         

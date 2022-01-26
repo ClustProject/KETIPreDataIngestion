@@ -508,3 +508,37 @@ if __name__ == "__main__":
     df = df[~df.index.duplicated(keep='first')]
     print(df)
 
+
+    def get_fieldList(self, bk_name, ms_name):
+        """
+        get all field list of specific measurements
+        """
+        # import time
+        # start = time.time()
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+
+        # query = f'import "influxdata/influxdb/schema" schema.measurementFieldKeys(bucket: "{bk_name}", measurement: "{ms_name}")'
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+
+        # results=[]
+        # for table in query_result:
+        #     print(table.columns)
+        #     for record in table.records:
+        #         print(record)
+        #         results.append(record.field())
+        # field_list = list(query_result["_value"])
+
+        query_result = self.cleanup_df(query_result)
+        field_list = list(query_result.columns)
+
+        # end = time.time()
+        # print("============time=================")
+        # print(end - start)
+        
+        return field_list

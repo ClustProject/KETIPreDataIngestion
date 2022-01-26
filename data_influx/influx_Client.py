@@ -522,7 +522,7 @@ class influxClient():
 
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTLocalInflux)
+    test = influxClient(ins.CLUSTDataServer)
     db_name = "farm_inner_air"
     ms_name = "HS1"
     test.switch_DB(db_name)

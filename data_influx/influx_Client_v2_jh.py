@@ -542,3 +542,84 @@ if __name__ == "__main__":
         # print(end - start)
         
         return field_list
+
+
+
+
+    def get_fieldList2(self, bk_name, ms_name):
+        """
+        get all field list of specific measurements
+        """
+        import time
+        start = time.time()
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        query_result = self.cleanup_df(query_result)
+        field_list = list(query_result.columns)
+
+        end = time.time()
+        print("=======first======")
+        print(end - start)
+
+        return field_list
+
+
+
+
+    def get_datafront_by_num2(self, number, bk_name, ms_name):
+        """
+        Get the :guilabel:`first N number` data from the specific measurement
+        """
+        import time
+        start = time.time()
+
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> limit(n:{number})
+        '''
+        query_client = self.DBClient.query_api()
+        data_frame = query_client.query_data_frame(query=query)
+        data_frame = self.cleanup_df(data_frame)
+
+
+        end = time.time()
+        print("====== time =======")
+        print(end - start)
+        print("\n")
+
+        return data_frame
+
+
+
+
+
+    def get_dataend_by_num2(self, number, bk_name, ms_name):
+        """
+        Get the :guilabel:`last N number` data from the specific measurement
+        """
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> sort(columns: ["_time"], desc:true)
+        |> limit(n:{number})
+        '''
+        query_client = self.DBClient.query_api()
+        data_frame = query_client.query_data_frame(query=query)
+        data_frame = self.cleanup_df(data_frame)
+
+        return data_frame

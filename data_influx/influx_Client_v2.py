@@ -1,11 +1,8 @@
-from operator import index
+from datetime import datetime
 import sys
 import os
-from turtle import bk
-from isort import file
+from turtle import st
 import pandas as pd
-from pyrsistent import b
-from sqlalchemy import column
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
@@ -77,15 +74,16 @@ class influxClient():
         get all field list of specific measurements
         """
         query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        import "experimental/query"
+
+        query.fromRange(bucket: "{bk_name}", start:0)
+        |> query.filterMeasurement(
+            measurement: "{ms_name}")
+        |> keys()
+        |> distinct(column: "_field")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        query_result = self.cleanup_df(query_result)
-        field_list = list(query_result.columns)
+        field_list = list(query_result["_field"])
 
         return field_list
 
@@ -117,10 +115,10 @@ class influxClient():
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> first(column: "_time")
+        |> first()
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
+        first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ') 
 
         return first_time
 
@@ -134,11 +132,11 @@ class influxClient():
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> last(column: "_time")
+        |> last()
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
-
+        last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ') 
+        
         return last_time
 
 
@@ -164,8 +162,7 @@ class influxClient():
         #query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
         #ex> params = {'end_time':end_time, 'start_time': start_time}
         
-        query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query=query)
+        data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame) # 1.8 출력으로 바꾸기
     
         return data_frame
@@ -207,17 +204,17 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> limit(n:{number})
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-        query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query=query)
+        data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
+
 
         return data_frame
 
 
-        
+
     def get_dataend_by_num(self, number, bk_name, ms_name):
         """
         Get the :guilabel:`last N number` data from the specific measurement
@@ -227,15 +224,14 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> tail(n:{number})
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> sort(columns: ["_time"], desc:true)
-        |> limit(n:{number})
         '''
-        query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query=query)
+        data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
+
 
 
 
@@ -248,7 +244,7 @@ class influxClient():
             df = df.drop(['result','table'], axis=1)
             df = df.set_index('_time')
             df = df.groupby(df.index).first()
-            df.index = pd.to_datetime(df.index)#).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
+            df.index = pd.to_datetime(df.index) #).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
             df = df[~df.index.duplicated(keep='first')] # index의 중복된 행 중 첫째행을 제외한 나머지 행 삭제
             df = df.sort_index(ascending=True)
             df.replace("", np.nan, inplace=True)
@@ -292,7 +288,6 @@ class influxClient():
     def write_db(self, bk_name, ms_name, data_frame): # 파라미터 추가
         """Write data to the influxdb
         """
-        # .....?
         write_client = self.DBClient.write_api(write_options= ASYNCHRONOUS)
         self.create_bucket(bk_name)
         write_client.write(bucket=bk_name, record=data_frame, data_frame_measurement_name=ms_name)
@@ -322,12 +317,12 @@ class influxClient():
         return tag_list
 
 
+
     # TODO Define Guard code for ms without tags
     def get_TagValue(self, bk_name, ms_name, tag_key):
         """
         Get :guilabel:`unique value` of selected tag key
         """
-
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -335,7 +330,6 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         print(query_result)
         tag_value = list(query_result["_value"])
@@ -375,23 +369,27 @@ class influxClient():
         for i, dbinfo in enumerate(intDataInfo['db_info']):
             print(i)
             print(dbinfo)
-            db_name = dbinfo['db_name']
+            bk_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
-            self.switch_MS(db_name, ms_name)
-            bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
-            MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
+            start_time = dbinfo['start'].replace(" ", "T") + "Z"
+            end_time = dbinfo['end'].replace(" ", "T") + "Z"
+            bind_params = {'start_time': start_time , 'end_time': end_time}
+            MSdataSet[i] =self.get_data_by_time(bind_params, bk_name, ms_name)
             MSdataSet[i].index.name ='datetime'
+
         return MSdataSet
 
 
 
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTLocalInflux)
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTLocalInflux)
 #     bk_name="air_indoor_경로당"
-#     ms_name="ICL1L2000235"
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
+#     ms_name="ICL1L2000235"    
+    # bk_name="air_indoor_초등학교"
+    # ms_name="ICW0W2000025"
+    # bk_name="bio_covid_infected_world"
+    # ms_name="england"
     # bk_name="writetest"
     # ms_name="wt1"
 
@@ -407,13 +405,15 @@ if __name__ == "__main__":
     # print("\n-----field list-----")
     # print(filed_list)
 
-    data_get = test.get_data(bk_name, ms_name)
-    print("\n-----get_data-----")
-    print(data_get)
+    # data_get = test.get_data(bk_name, ms_name)
+    # print("\n-----get_data-----")
+    # print(data_get)
 
     # first_time = test.get_first_time(bk_name, ms_name)
     # print("\n-----first_time-----")
+    # print(type(first_time))
     # print(first_time)
+    # print("\n")
 
     # last_time = test.get_last_time(bk_name, ms_name)
     # print("\n-----last_time-----")
@@ -429,9 +429,11 @@ if __name__ == "__main__":
     # print("===== datafront =====")
     # print(datafront)
 
-    # dataend = test.get_dataend_by_num(10, bk_name, ms_name)
+
+    # dataend = test.get_dataend_by_num(20000, bk_name, ms_name)
     # print("===== dataend =====")
     # print(dataend)
+
 
     # datafreq = test.get_freq(bk_name, ms_name)
     # print("===== datafreq =====")
@@ -467,3 +469,18 @@ if __name__ == "__main__":
     # by_timestamp = test.get_df_by_timestamp(bk_name, ms_name, time_start, time_end)
     # print("============== get_df_by_timestamp ==================")
     # print(by_timestamp)
+
+    # intDataInfo ={ "db_info":[
+    #             {"db_name": "air_indoor_경로당",
+    #             "measurement":"ICL1L2000235", 
+    #             "end": "2021-08-31 23:58:00", 
+    #             "start":"2021-02-04 09:14:00"}, 
+    #             {"db_name": "air_indoor_경로당",
+    #             "measurement":"ICL1L2000236", 
+    #             "end": "2021-08-31 23:58:00", 
+    #             "start":"2021-02-03 17:18:00"}
+    #             ]
+    #         }
+    
+    # msdataset = test.get_MeasurementDataSet(intDataInfo)
+    # print(msdataset)

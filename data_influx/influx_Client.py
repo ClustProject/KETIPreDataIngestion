@@ -173,7 +173,10 @@ class influxClient():
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         print(first)
+        print("===============index check=========")
         first_time = first.index[0]
+        print(first_time)
+        print("================end============")
         #df = self.cleanup_df(df)
         return first_time
 
@@ -529,7 +532,8 @@ if __name__ == "__main__":
     res = test.get_df_by_timestamp(ms_name, "1546268400000000000","1641913200000000000")
     print(res)
     #test.write_db(res,"HS1")
-    rr = test.get_last_time(db_name, ms_name)
+    rr = test.get_first_time(db_name, ms_name)
+    print("===========first time============")
     print(rr)
     rr= pd.to_datetime(rr)
     lastDay = rr.strftime('%Y%m%d')

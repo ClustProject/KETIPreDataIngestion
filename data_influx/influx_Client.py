@@ -385,8 +385,8 @@ class influxClient():
         :rtype: Dict
         """
         data = self.get_datafront_by_num(10,db_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
+        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
 
 
     def get_tagList(self, db_name, ms_name):

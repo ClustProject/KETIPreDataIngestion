@@ -262,8 +262,8 @@ class influxClient():
         """
         """
         data = self.get_datafront_by_num(10, bk_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq": str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
+        return {"freq": str(RefineFrequency().get_frequencyWith3DataPoints(data))}
 
 
     """

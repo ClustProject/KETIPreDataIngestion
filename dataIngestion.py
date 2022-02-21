@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 sys.path.append("../")
 sys.path.append("../..")
-
+import os
 class DataIngestionByInputType():
     def __init__(self):
         pass
@@ -28,4 +28,13 @@ class DataIngestionByInputType():
         return full_data
 
 
-    
+def inputControl(inputType, db_name=None, ms_name=None):
+    from KETIPreDataIngestion.dataIngestion import DataIngestionByInputType
+    dataC = DataIngestionByInputType()
+    if inputType=="file":
+        BASE_DIR = os.getcwd()
+        input_file = os.path.join(BASE_DIR, 'sampleData', 'data_miss_original.csv')
+        input_data = dataC.getFileInput(input_file, 'timedate')
+    elif inputType =="influx":
+        input_data = dataC.getInfluxInput(db_name, ms_name, "2000")
+    return input_data

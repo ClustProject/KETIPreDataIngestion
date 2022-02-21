@@ -22,6 +22,9 @@ class influxClient():
     def get_DBList(self):
         """
         get all bucket(Database) list
+
+        :return: db_list
+        :rtype: List
         """
         buckets_api = self.DBClient.buckets_api()
         buckets = buckets_api.find_buckets(
@@ -36,6 +39,12 @@ class influxClient():
     def measurement_list(self, bk_name):
         """
         get all measurement list of specific Bucket
+
+        :param bk_name: bucket(database) 
+        :type bk_name: string
+
+        :return: measurement list
+        :rtype: List
         """
         query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
@@ -47,6 +56,12 @@ class influxClient():
         """
         Get the only start and end measurement name
         Use this function to reduce the DB load time.
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+
+        :return: measurement list
+        :rtype: List
         """
         ms_list = []
         ori_ms_list = self.measurement_list(bk_name)
@@ -67,6 +82,14 @@ class influxClient():
     def get_fieldList(self, bk_name, ms_name):
         """
         get all field list of specific measurements
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: fieldList in measurement
+        :rtype: List
         """
         query = f'''
         import "experimental/query"
@@ -85,6 +108,14 @@ class influxClient():
     def get_data(self, bk_name, ms_name):
         """
         Get :guilabel:`all data` of the specific mearuement, change dataframe
+        
+        :param db_name: bucket(database) 
+        :type db_name: string
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: df, measurement data
+        :rtype: DataFrame
         """
         query = f'''
         from(bucket:"{bk_name}")
@@ -104,6 +135,14 @@ class influxClient():
     def get_first_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`first data` of the specific mearuement
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :return: first time in data
+        :return: String
         """
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -120,6 +159,14 @@ class influxClient():
     def get_last_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`last data` of the specific mearuement
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: last time in data
+        :rtype: String
         """
         query = f'''
         from(bucket: "{bk_name}") 
@@ -136,6 +183,24 @@ class influxClient():
         """
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
+
+        Example
+            >>> ex> bind_params example
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
+                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+        
+
+        :param bind_params: end time & start time
+        :type bind_params: dictionary
+
+        :param db_name: bucket(database)  
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: df, time duration
+        :rtype: DataFrame
         """
         # 불러오는 start_time end_time 시간이 TZ 형식이 아니라서 오류 발생..?
         # ex. TZ형식 -> 2020-02-28T10:00:000Z
@@ -161,7 +226,26 @@ class influxClient():
     def get_data_by_days(self, bind_params, bk_name, ms_name):
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
+        
+        **Example**::
+
+            ex> bind_param example
+            bind_params = {'end_time': 1615991400000, 'days': '7d'}
+
+        
+        :param bind_params: end time & duration days
+        :type bind_params: dictionary
+
+        :param db_name: bucket(database)  
+        :type db_name: string
+
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :return: df, time duration
+        :rtype: DataFrame
         """
+
         end_time = bind_params['end_time']
         days = bind_params['days']
 
@@ -185,7 +269,20 @@ class influxClient():
     def get_datafront_by_num(self, number, bk_name, ms_name):
         """
         Get the :guilabel:`first N number` data from the specific measurement
+        
+        :param db_name: number(limit) 
+        :type db_name: string
+
+        :param db_name: bucket(database)   
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: df, first N(number) row data in measurement
+        :rtype: DataFrame
         """
+
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -202,7 +299,20 @@ class influxClient():
     def get_dataend_by_num(self, number, bk_name, ms_name):
         """
         Get the :guilabel:`last N number` data from the specific measurement
+
+        :param db_name: number(limit) 
+        :type db_name: string
+
+        :param db_name: bucket(database)  
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: df, last N(number) row data in measurement
+        :rtype: DataFrame
         """
+
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -217,30 +327,23 @@ class influxClient():
         return data_frame
 
 
-    def get_data_limit_by_time(self, bk_name, ms_name, bind_params, number):
-        """
-        """
-        start_time = bind_params['start_time']
-        end_time = bind_params['end_time']
-
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: {start_time}, stop: {end_time}) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> limit(n:{number})
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
-        data_frame = self.DBClient.query_api().query_data_frame(query)
-        data_frame = self.cleanup_df(data_frame)
-
-        return data_frame
-
 
     def cleanup_df(self, df):
         """
         Clean data, remove duplication, Sort, Set index (datetime)
+
+        - Set index to datetime
+        - Remove duplication
+        - Sort ascending
+        - Replace blank to Nan
+
+        :param df: dataFrame
+        :type df: dataFrame
+
+        :return: df, data setting
+        :rtype: DataFrame
         """
+
         import numpy as np
         if 'result' in df.columns:
             df = df.drop(['result', 'table'], axis=1)
@@ -258,9 +361,17 @@ class influxClient():
             pass
         return df
 
-    def get_freq(self, bk_name, ms_name):  # 해결
+    def get_freq(self, bk_name, ms_name): 
         """
+        :param db_name: bucket(database)  
+        :type db_name: string
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :return: freq
+        :rtype: Dict
         """
+
         data = self.get_datafront_by_num(10, bk_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
         return {"freq": str(RefineFrequency().get_frequencyWith3DataPoints(data))}
@@ -286,26 +397,20 @@ class influxClient():
         return data_frame
     """
 
-
-    def write_db(self, bk_name, ms_name, data_frame):  # 파라미터 추가
-        """Write data to the influxdb
-        """
-        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
-        self.create_bucket(bk_name)
-        write_client.write(bucket=bk_name, record=data_frame,
-                           data_frame_measurement_name=ms_name)
-        print("========== write success ==========")
-        self.DBClient.close()
-
-    def create_bucket(self, bk_name):  # write_db 수행 시, bucket 생성 필요
-        buckets_api = self.DBClient.buckets_api()
-        buckets_api.create_bucket(bucket_name=bk_name)
-        print("========== create bucket ==========")
-
     def get_tagList(self, bk_name, ms_name):
         """
         Get :guilabel:`all tag keys` list of the specific measurement. \n
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :return: tagList, measurement tag keys
+        :rtpye: List
         """
+
         query = f'''
         import "influxdata/influxdb/schema"
         schema.measurementTagKeys(bucket: "{bk_name}", measurement: "{ms_name}")
@@ -320,7 +425,20 @@ class influxClient():
     def get_TagValue(self, bk_name, ms_name, tag_key):
         """
         Get :guilabel:`unique value` of selected tag key
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+
+        :param ms_name: measurement
+        :type ms_name: string
+
+        :param tag_key: select tag key data
+        :type tag_key: string
+
+        :return: unique tag value list
+        :rtype: List
         """
+
         query = f'''
         import "influxdata/influxdb/schema"
 
@@ -335,11 +453,26 @@ class influxClient():
         return tag_value
 
 
-
     def get_TagGroupData(self, bk_name, ms_name, tag_key, tag_value):
         """
         Get :guilabel:`tag value` set by tag key
+
+        :param db_name: bucket(database) 
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :param tag_key: tag key
+        :type tag_key: string
+
+        :param tag_value: selected tag key data
+        :type tag_value: string
+
+        :return: new dataframe
+        :rtype: DataFrame
         """
+
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -384,6 +517,66 @@ class influxClient():
         return MSdataSet
 
 
+    def get_data_limit_by_time(self, bind_params, number, bk_name, ms_name):
+        """
+        Get the :guilabel:`limit data` of the specific mearuement based on :guilabel:`time duration` (days)
+        
+        Example
+            >>> ex> bind_params example
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
+                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+        
+        :param bind_params: end time & start time
+        :type bind_params: dictionary
+
+        :param db_name: number(limit) 
+        :type db_name: string
+
+        :param db_name: bucket(database)  
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+
+        :return: df, time duration
+        :rtype: DataFrame
+        """
+        start_time = bind_params['start_time']
+        end_time = bind_params['end_time']
+
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: {start_time}, stop: {end_time}) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> limit(n:{number})
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        data_frame = self.DBClient.query_api().query_data_frame(query)
+        data_frame = self.cleanup_df(data_frame)
+
+        return data_frame
+
+
+    def write_db(self, bk_name, ms_name, data_frame):  # 파라미터 추가
+        """
+        Write data to the influxdb
+        """
+        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
+        self.create_bucket(bk_name)
+        write_client.write(bucket=bk_name, record=data_frame,
+                           data_frame_measurement_name=ms_name)
+        print("========== write success ==========")
+        self.DBClient.close()
+
+    def create_bucket(self, bk_name):  # write_db 수행 시, bucket 생성 필요
+        """
+        Create bucket to the influxdb
+        """
+        buckets_api = self.DBClient.buckets_api()
+        buckets_api.create_bucket(bucket_name=bk_name)
+        print("========== create bucket ==========")
 
 
 

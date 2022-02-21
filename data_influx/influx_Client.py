@@ -66,6 +66,9 @@ class influxClient():
         Get the only start and end measurement name
         Use this function to reduce the DB load time.
 
+        :param db_name: database
+        :type db_name: string
+
         :return: measurement list
         :rtype: List
         """
@@ -378,7 +381,7 @@ class influxClient():
         """
         :param db_name: database
         :type db_name: string
-        :param ms_name: database
+        :param ms_name: measurement
         :type ms_name: string
 
         :return: freq

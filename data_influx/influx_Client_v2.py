@@ -327,7 +327,6 @@ class influxClient():
         return data_frame
 
 
-
     def cleanup_df(self, df):
         """
         Clean data, remove duplication, Sort, Set index (datetime)
@@ -557,6 +556,33 @@ class influxClient():
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
+
+
+    def get_data_count(self, bk_name, ms_name):
+        """
+        Get the :guilabel:`data count` from the specific measurement
+
+        :param db_name: bucket(database)  
+        :type db_name: string
+
+        :param ms_name: measurement 
+        :type ms_name: string
+
+        :return: data count
+        :rtype: string
+        """
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> count()
+        '''
+        data_frame = self.DBClient.query_api().query_data_frame(query)
+        data_count = data_frame["_value"][0]
+
+        return data_count
+
 
 
     def write_db(self, bk_name, ms_name, data_frame):  # 파라미터 추가

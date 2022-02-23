@@ -611,9 +611,6 @@ class influxClient():
 
 
 
-
-
-
 # if __name__ == "__main__":
 #     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
 #     test = influxClient(ins.CLUSTLocalInflux)

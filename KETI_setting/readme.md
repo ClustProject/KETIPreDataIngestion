@@ -12,6 +12,7 @@ pass_='PASSWORD'
 protocol ='line'
 ```
 
+```json
 CLUSTDataServer={
         "host":"X.X.X>X",
         "port":XXXX,
@@ -19,13 +20,16 @@ CLUSTDataServer={
         "password":"password",
         "protocol":"line"
 }
+```
 
 # Influx DB 2.0.9 Description Example
+```json
 CLUSTDataServer2={
         "url":"",
         "token":"",
         "org":""
 }
+```
 
 - It also should include metadata config information
 - We are currently using mongo DB as the meta DB.

@@ -4,9 +4,7 @@ from datetime import datetime
 import sys
 import os
 import pandas as pd
-from sympy import Q
-sys.path.append(os.path.dirname(os.path.abspath(
-    os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 
 class influxClient():
@@ -27,8 +25,7 @@ class influxClient():
         :rtype: List
         """
         buckets_api = self.DBClient.buckets_api()
-        buckets = buckets_api.find_buckets(
-            limit=100).buckets  # bucket list 보여주기 최대 100까지만 가능
+        buckets = buckets_api.find_buckets(limit=100).buckets  # bucket list 보여주기 최대 100까지만 가능
 
         bk_list = []
         for bucket in buckets:
@@ -611,31 +608,31 @@ class influxClient():
 
 
 
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     test = influxClient(ins.CLUSTLocalInflux)
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins.CLUSTDataServer2)
 #     bk_name="air_indoor_경로당"
 #     ms_name="ICL1L2000235"
     # bk_name="air_indoor_초등학교"
     # ms_name="ICW0W2000025"
-    # bk_name="bio_covid_infected_world"
-    # ms_name="england"
+    bk_name="bio_covid_infected_world"
+    ms_name="england"
     # bk_name="writetest"
     # ms_name="wt1"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
 
-    # bucket_list = test.get_DBList()
-    # print("\n-----bucket list-----")
-    # print(bucket_list)
+    bucket_list = test.get_DBList()
+    print("\n-----bucket list-----")
+    print(bucket_list)
 
-    # measurement_list = test.measurement_list(bk_name)
-    # print("\n-----measurement list-----")
-    # print(measurement_list)
+    measurement_list = test.measurement_list(bk_name)
+    print("\n-----measurement list-----")
+    print(measurement_list)
 
-    # filed_list = test.get_fieldList(bk_name, ms_name)
-    # print("\n-----field list-----")
-    # print(filed_list)
+    filed_list = test.get_fieldList(bk_name, ms_name)
+    print("\n-----field list-----")
+    print(filed_list)
 
     # data_get = test.get_data(bk_name, ms_name)
     # print("\n-----get_data-----")
@@ -709,6 +706,7 @@ class influxClient():
     # by_timestamp = test.get_df_by_timestamp(bk_name, ms_name, time_start, time_end)
     # print("============== get_df_by_timestamp ==================")
     # print(by_timestamp)
+
 
     # intDataInfo ={ "db_info":[
     #             {"db_name": "air_indoor_경로당",

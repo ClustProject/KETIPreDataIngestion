@@ -1,4 +1,7 @@
 # influx_Clinet
+- InfluxDB 1.8.9 -> influx_Client.py
+- InfluxDB 2.0.9 -> influx_Client_v2.py
+
 
 ## class influcClient
 - basic influx DB connection

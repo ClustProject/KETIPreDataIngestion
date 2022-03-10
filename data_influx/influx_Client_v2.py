@@ -1,6 +1,5 @@
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
-from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket, PostBucketRequest, PatchBucketRequest, BucketRetentionRules
-from datetime import datetime
+from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
 import pandas as pd
@@ -128,7 +127,6 @@ class influxClient():
         return data_frame
 
         # first() - 테이블에서 첫번째 레코드 반환
-
     def get_first_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`first data` of the specific mearuement
@@ -152,7 +150,6 @@ class influxClient():
         return first_time
 
         # last() - 테이블에서 마지막 레코드 반환
-
     def get_last_time(self, bk_name, ms_name):
         """
         Get the :guilabel:`last data` of the specific mearuement
@@ -199,9 +196,6 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-        # 불러오는 start_time end_time 시간이 TZ 형식이 아니라서 오류 발생..?
-        # ex. TZ형식 -> 2020-02-28T10:00:000Z
-        #       현재 -> 2020-02-28 10:00:00+00:00
         start_time = bind_params['start_time']
         end_time = bind_params['end_time']
 
@@ -212,11 +206,9 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-        # query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-        # ex> params = {'end_time':end_time, 'start_time': start_time}
 
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
-        data_frame = self.cleanup_df(data_frame)  # 1.8 출력으로 바꾸기
+        data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
@@ -242,7 +234,6 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-
         end_time = bind_params['end_time']
         days = bind_params['days']
 
@@ -254,12 +245,9 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-        # query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-        # ex> params = {'end_time':end_time, 'start_time': start_time}
-
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
-        data_frame = self.cleanup_df(data_frame)  # 1.8 출력으로 바꾸기
+        data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
@@ -339,7 +327,6 @@ class influxClient():
         :return: df, data setting
         :rtype: DataFrame
         """
-
         import numpy as np
         if 'result' in df.columns:
             df = df.drop(['result', 'table'], axis=1)
@@ -351,8 +338,6 @@ class influxClient():
             df = df[~df.index.duplicated(keep='first')]
             df = df.sort_index(ascending=True)
             df.replace("", np.nan, inplace=True)
-        # 1.8코드에서는 time 컬럼의 값은 str
-        # 현재 2.0 코드에서는 time 컬럼의 값은 timestamp
         else:
             pass
         return df
@@ -477,7 +462,6 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-        print(query)
         query_result = self.DBClient.query_api().query_data_frame(query=query)
 
         return query_result
@@ -496,12 +480,8 @@ class influxClient():
         :return: MSdataset
         :rtype: Dict
         """
-        # intDataInfo가 Dict로 들어오는데 2.0에서 어떻게 처리해야할지 모르겠음
         MSdataSet = {}
-        print(intDataInfo)
         for i, dbinfo in enumerate(intDataInfo['db_info']):
-            print(i)
-            print(dbinfo)
             bk_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             start_time = dbinfo['start'].replace(" ", "T") + "Z"
@@ -581,8 +561,7 @@ class influxClient():
         return data_count
 
 
-
-    def write_db(self, bk_name, ms_name, data_frame):  # 파라미터 추가
+    def write_db(self, bk_name, ms_name, data_frame):
         """
         Write data to the influxdb
         """
@@ -608,31 +587,36 @@ class influxClient():
 
 
 
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTDataServer2)
+
+
+
+
+
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTDataServer2)
 #     bk_name="air_indoor_경로당"
 #     ms_name="ICL1L2000235"
     # bk_name="air_indoor_초등학교"
     # ms_name="ICW0W2000025"
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
+    # bk_name="bio_covid_infected_world"
+    # ms_name="england"
     # bk_name="writetest"
     # ms_name="wt1"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
 
-    bucket_list = test.get_DBList()
-    print("\n-----bucket list-----")
-    print(bucket_list)
+    # bucket_list = test.get_DBList()
+    # print("\n-----bucket list-----")
+    # print(bucket_list)
 
-    measurement_list = test.measurement_list(bk_name)
-    print("\n-----measurement list-----")
-    print(measurement_list)
+    # measurement_list = test.measurement_list(bk_name)
+    # print("\n-----measurement list-----")
+    # print(measurement_list)
 
-    filed_list = test.get_fieldList(bk_name, ms_name)
-    print("\n-----field list-----")
-    print(filed_list)
+    # filed_list = test.get_fieldList(bk_name, ms_name)
+    # print("\n-----field list-----")
+    # print(filed_list)
 
     # data_get = test.get_data(bk_name, ms_name)
     # print("\n-----get_data-----")

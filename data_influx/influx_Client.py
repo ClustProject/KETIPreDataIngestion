@@ -374,6 +374,7 @@ class influxClient():
         df.index = pd.to_datetime(df.index)#).astype('int64'))
         df = df.drop_duplicates(keep='first')
         """
+        df.index = pd.to_datetime(df.index)#).astype('int64'))
         df = df[~df.index.duplicated(keep='first')]
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)

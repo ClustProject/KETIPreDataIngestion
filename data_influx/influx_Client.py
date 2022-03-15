@@ -102,7 +102,10 @@ class influxClient():
 
         """
         MSdataSet ={}
+        print(intDataInfo)
         for i, dbinfo in enumerate(intDataInfo['db_info']):
+            print(i)
+            print(dbinfo)
             db_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             self.switch_MS(db_name, ms_name)
@@ -171,7 +174,11 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(first)
+        print("===============index check=========")
         first_time = first.index[0]
+        print(first_time)
+        print("================end============")
         #df = self.cleanup_df(df)
         return first_time
 
@@ -195,6 +202,7 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        print(last)
         #df = self.cleanup_df(df)
         last_time = last.index[0]
         return last_time
@@ -360,12 +368,15 @@ class influxClient():
             df = df.set_index('time')
         elif 'datetime' in df.columns:
             df = df.set_index('datetime')
+        print(len(df))
+        """
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))
         df = df.drop_duplicates(keep='first')
+        """
+        df = df[~df.index.duplicated(keep='first')]
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
-
         return df
 
     def get_freq(self, db_name, ms_name):
@@ -436,6 +447,7 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
+        print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -444,6 +456,7 @@ class influxClient():
     def get_TagValue(self, db_name, ms_name, tag_key):
         """
         Get :guilabel:`unique value` of selected tag key
+
 
         **Influx Query**::
 
@@ -494,29 +507,11 @@ class influxClient():
     def write_db(self, df, table):
         """Write data to the influxdb
         """
+
         frameClient = DataFrameClient(self.influx_setting['host'],self.influx_setting['port'],self.influx_setting['user'],self.influx_setting['password'],self.db_name)
    
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):
@@ -530,42 +525,3 @@ class influxClient():
 #             MSdataSet[i].index.name ='datetime'
 
 #         return MSdataSet
-
-
-
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     test = influxClient(ins.CLUSTDataServer)
-#     db_name = "farm_inner_air"
-#     ms_name = "HS1"
-#     test.switch_DB(db_name)
-#     res = test.get_df_by_timestamp(ms_name, "1546268400000000000","1641913200000000000")
-#     print(res)
-#     #test.write_db(res,"HS1")
-#     rr = test.get_first_time(db_name, ms_name)
-#     print("===========first time============")
-#     print(rr)
-#     rr= pd.to_datetime(rr)
-#     lastDay = rr.strftime('%Y%m%d')
-#     print(lastDay)
-
-    '''
-    intDataInfo = {"db_info":
-                [
-                {"db_name": "air_indoor_어린이집",
-                "measurement":"ICW0W2100153", 
-                "end": "2021-08-20T21:54:00Z", 
-                "start":"2021-02-09T16:17:00Z"}, 
-                {"db_name": "air_indoor_어린이집",
-                "measurement":"ICW0W2100152", 
-                "end": "2021-09-01T00:01:00Z", 
-                "start":"2021-02-09T16:17:00Z"}
-                ]
-            }
-
-    
-    ms_dataset = test.get_MeasurementDataSet(intDataInfo)
-    print(ms_dataset)
-    print(type(ms_dataset))
-    '''
-    

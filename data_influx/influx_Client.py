@@ -379,8 +379,8 @@ class influxClient():
         :rtype: Dict
         """
         data = self.get_datafront_by_num(10,db_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
+        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
 
 
     def get_tagList(self, db_name, ms_name):
@@ -445,7 +445,6 @@ class influxClient():
         """
         Get :guilabel:`unique value` of selected tag key
 
-
         **Influx Query**::
 
             show tag values with key = {tag_key}
@@ -495,7 +494,6 @@ class influxClient():
     def write_db(self, df, table):
         """Write data to the influxdb
         """
-
         frameClient = DataFrameClient(self.influx_setting['host'],self.influx_setting['port'],self.influx_setting['user'],self.influx_setting['password'],self.db_name)
    
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol

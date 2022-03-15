@@ -354,8 +354,8 @@ class influxClient():
         """
 
         data = self.get_datafront_by_num(10,bk_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
-        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
+        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
 
 
     """
@@ -453,7 +453,6 @@ class influxClient():
         :return: new dataframe
         :rtype: DataFrame
         """
-
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -465,7 +464,6 @@ class influxClient():
         query_result = self.DBClient.query_api().query_data_frame(query=query)
 
         return query_result
-
 
 
     # TODO Define Guard code for ms without tags

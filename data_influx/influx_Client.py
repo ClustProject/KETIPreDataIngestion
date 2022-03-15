@@ -102,10 +102,7 @@ class influxClient():
 
         """
         MSdataSet ={}
-        print(intDataInfo)
         for i, dbinfo in enumerate(intDataInfo['db_info']):
-            print(i)
-            print(dbinfo)
             db_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             self.switch_MS(db_name, ms_name)
@@ -174,11 +171,7 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        print(first)
-        print("===============index check=========")
         first_time = first.index[0]
-        print(first_time)
-        print("================end============")
         #df = self.cleanup_df(df)
         return first_time
 
@@ -202,7 +195,6 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        print(last)
         #df = self.cleanup_df(df)
         last_time = last.index[0]
         return last_time
@@ -387,8 +379,8 @@ class influxClient():
         :rtype: Dict
         """
         data = self.get_datafront_by_num(10,db_name, ms_name)
-        from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
-        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
+        from KETIPrePartialDataPreprocessing.data_refine.frequency import FrequencyRefine
+        return {"freq" : str(FrequencyRefine().get_frequencyWith3DataPoints(data))}
 
 
     def get_tagList(self, db_name, ms_name):
@@ -444,10 +436,8 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
-        print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
-        print(df)
         return df
 
 
@@ -476,7 +466,6 @@ class influxClient():
 
         self.switch_MS(db_name, ms_name)
         query_string = 'show tag values with key = ' + tag_key
-        print(query_string)
         tag_value = list(self.DBClient.query(query_string).get_points())
         value_list = list(x['value'] for x in tag_value)
 
@@ -512,6 +501,25 @@ class influxClient():
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
     
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):
 #             print(i)
@@ -525,21 +533,23 @@ class influxClient():
 
 #         return MSdataSet
 
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTDataServer)
-    db_name = "farm_inner_air"
-    ms_name = "HS1"
-    test.switch_DB(db_name)
-    res = test.get_df_by_timestamp(ms_name, "1546268400000000000","1641913200000000000")
-    print(res)
-    #test.write_db(res,"HS1")
-    rr = test.get_first_time(db_name, ms_name)
-    print("===========first time============")
-    print(rr)
-    rr= pd.to_datetime(rr)
-    lastDay = rr.strftime('%Y%m%d')
-    print(lastDay)
+
+
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTDataServer)
+#     db_name = "farm_inner_air"
+#     ms_name = "HS1"
+#     test.switch_DB(db_name)
+#     res = test.get_df_by_timestamp(ms_name, "1546268400000000000","1641913200000000000")
+#     print(res)
+#     #test.write_db(res,"HS1")
+#     rr = test.get_first_time(db_name, ms_name)
+#     print("===========first time============")
+#     print(rr)
+#     rr= pd.to_datetime(rr)
+#     lastDay = rr.strftime('%Y%m%d')
+#     print(lastDay)
 
     '''
     intDataInfo = {"db_info":

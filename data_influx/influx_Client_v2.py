@@ -554,7 +554,7 @@ class influxClient():
         |> count()
         '''
         data_frame = self.DBClient.query_api().query_data_frame(query)
-        data_count = data_frame["_value"][0]
+        data_count = int(data_frame["_value"][0])
 
         return data_count
 

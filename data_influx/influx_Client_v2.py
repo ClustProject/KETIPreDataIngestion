@@ -544,7 +544,7 @@ class influxClient():
         :type ms_name: string
 
         :return: data count
-        :rtype: string
+        :rtype: int
         """
         query = f'''
         from(bucket: "{bk_name}") 

@@ -1,6 +1,4 @@
-import sys
-import os
-
+import pandas as pd
 def getAllMSDataOfDB(db_client, db_name, query_start_time, query_end_time):
     """
         It returns dataSet from all MS of a speicific DB.
@@ -25,3 +23,34 @@ def getAllMSDataOfDB(db_client, db_name, query_start_time, query_end_time):
         data = db_client.get_data_by_time(bind_params, db_name, ms_name)
         dataSet.append(data)
     return ms_list, dataSet
+
+def cleanup_df(df):
+    """
+    Clean dataFrame, remove duplication, Set and sort by timeseries index (datetime type)
+
+    - Set index to datetime
+    - Remove duplication
+    - Sort ascending
+    - Replace blank to Nan
+
+    :param df: dataFrame
+    :type df: dataFrame
+
+    :return: df, data setting
+    :rtype: DataFrame
+    """
+    import numpy as np
+    if 'time' in df.columns:
+        df = df.set_index('time')
+    elif 'datetime' in df.columns:
+        df = df.set_index('datetime')
+    """
+    df = df.groupby(df.index).first()
+    df.index = pd.to_datetime(df.index)#).astype('int64'))
+    df = df.drop_duplicates(keep='first')
+    """
+    df.index = pd.to_datetime(df.index)#).astype('int64'))
+    df = df[~df.index.duplicated(keep='first')]
+    df = df.sort_index(ascending=True)
+    df.replace("", np.nan, inplace=True)
+    return df

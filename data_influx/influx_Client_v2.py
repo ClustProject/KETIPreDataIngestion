@@ -13,8 +13,7 @@ class influxClient():
 
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
-        self.DBClient = InfluxDBClient(
-            url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
+        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
 
     def get_DBList(self):
         """
@@ -143,6 +142,8 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> first()
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -167,6 +168,8 @@ class influxClient():
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> last()
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -603,6 +606,8 @@ class influxClient():
     # ms_name="wt1"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
+    # bk_name = "air_indoor_아파트"
+    # ms_name = "ICW0W2000781"
 
     # bucket_list = test.get_DBList()
     # print("\n-----bucket list-----")

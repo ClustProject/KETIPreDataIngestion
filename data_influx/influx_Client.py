@@ -102,10 +102,7 @@ class influxClient():
 
         """
         MSdataSet ={}
-        print(intDataInfo)
         for i, dbinfo in enumerate(intDataInfo['db_info']):
-            print(i)
-            print(dbinfo)
             db_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             self.switch_MS(db_name, ms_name)
@@ -174,11 +171,7 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        print(first)
-        print("===============index check=========")
         first_time = first.index[0]
-        print(first_time)
-        print("================end============")
         #df = self.cleanup_df(df)
         return first_time
 
@@ -202,7 +195,6 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        print(last)
         #df = self.cleanup_df(df)
         last_time = last.index[0]
         return last_time
@@ -368,7 +360,6 @@ class influxClient():
             df = df.set_index('time')
         elif 'datetime' in df.columns:
             df = df.set_index('datetime')
-        print(len(df))
         """
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))
@@ -448,7 +439,6 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
-        print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -526,3 +516,24 @@ class influxClient():
 #             MSdataSet[i].index.name ='datetime'
 
 #         return MSdataSet
+
+
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTDataServer)
+#     db_name="air_indoor_아파트"
+#     ms_name="ICW0W2000781"
+
+#     first_time = test.get_first_time(db_name, ms_name)
+#     print("\n-----first_time-----")
+#     print(type(first_time))
+#     print(first_time)
+#     print("\n")
+
+#     last_time = test.get_last_time(db_name, ms_name)
+#     print("\n-----last_time-----")
+#     print(last_time)
+
+    # aa = test.get_first_time(db_name, ms_name)
+    # print(aa)
+    # print(type(aa))

@@ -172,7 +172,7 @@ class influxClient():
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         first_time = first.index[0]
-        #df = self.cleanup_df(df)
+
         return first_time
 
 
@@ -195,7 +195,7 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        #df = self.cleanup_df(df)
+
         last_time = last.index[0]
         return last_time
 

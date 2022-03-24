@@ -7,10 +7,8 @@ from dateutil.relativedelta import relativedelta
 from time import time
 from sklearn import datasets
 import math
-
-from sympy import Q, print_fcode
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-
+from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
 from KETIPreDataIngestion.data_influx.influx_Client_v2 import influxClient
 
 
@@ -21,7 +19,8 @@ class CycleData():
     def __init__(self):
         # self.start, self.end = self.getTimePointByDayUnit(data)
         # self.data = data[self.start: self.end] #(??)
-        pass
+        self.time_00 = datetime.strptime("00:00:00","%H:%M:%S").time()
+
 
     # def getTimePointByDayUnit(self, data):
     #     # data 를  정렬시킨 후 명확히 일자가 시작하는 위치 00:00:00에서~ 23:59:59 (맞나요?) 까지 끊고 그것에 대한  start, end time을 구한다.-
@@ -94,7 +93,7 @@ class CycleData():
         day_last = data.index[-1]
 
         # 들어온 dataframe의 첫 시간이 00:00:00이 아니면 다음날 00:00:00으로 변경
-        if day_first.time() != '00:00:00':
+        if day_first.time() != self.time_00:
             day_start = day_first + timedelta(days=1) - timedelta(hours=day_first.hour, minutes=day_first.minute, seconds=day_first.second)
         else:
             day_start = day_first
@@ -103,7 +102,7 @@ class CycleData():
         day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
 
         # 들어온 dataframe의 마지막 시간이 23이 아닐경우 그 전날의 23:59:59로 변경
-        if day_last.time() != '23:59:59':
+        if day_last.time() != self.time_23:
             day_end = day_last - timedelta(hours=day_last.hour, minutes=day_last.minute, seconds=day_last.second+1)
         else:
             day_end = day_last
@@ -156,11 +155,11 @@ class CycleData():
         week_last = data.index[-1]
         
         # dataframe의 첫번째 데이터 처리
-        if week_first.day_name() != 'Monday' and week_first.time() != '00:00:00':
+        if week_first.day_name() != 'Monday' and week_first.time() != self.time_00:
             week_start =  week_first + timedelta(weeks=1) - timedelta(days=week_first.dayofweek, hours=week_first.hour, minutes=week_first.minute, seconds=week_first.second)
-        elif week_first.day_name() != 'Monday' and week_first.time() == '00:00:00':
+        elif week_first.day_name() != 'Monday' and week_first.time() == self.time_00:
             week_start = week_first + timedelta(weeks=1) - timedelta(days=week_first.dayofweek)
-        elif week_first.day_name() == 'Monday' and week_first.time() != '00:00:00':
+        elif week_first.day_name() == 'Monday' and week_first.time() != self.time_00:
             week_start = week_first + timedelta(weeks=1) - timedelta(hours=week_first.hour, minutes=week_first.minute, seconds=week_first.second)
         else:
             week_start = week_first
@@ -168,7 +167,7 @@ class CycleData():
         week_stop = week_start + timedelta(weeks=num) - timedelta(seconds=1)
 
         # dataframe의 마지막 데이터 처리
-        if week_last.day_name() != 'Sunday' or week_last.time() != '23:59:59':
+        if week_last.day_name() != 'Sunday' or week_last.time() != self.time_23:
             week_end = week_last - timedelta(days=week_last.dayofweek, hours=week_last.hour, minutes=week_last.minute, seconds=week_last.second+1)
         else:
             week_end = week_last
@@ -215,19 +214,20 @@ class CycleData():
         month_last = data.index[-1]
 
         # 시작 월 설정
-        if month_first.day != 1 and month_first.time() != '00:00:00':
+        if month_first.day != 1 and month_first.time() != self.time_00:
             month_start = month_first + relativedelta(months=1) - timedelta(days=month_first.day-1, hours=month_first.hour, minutes=month_first.minute, seconds=month_first.second)
-        elif month_first.day != 1 and month_first.time() == '00:00:00':
+        elif month_first.day != 1 and month_first.time() == self.time_00:
             month_start = month_first + relativedelta(months=1) - timedelta(days=month_first.day-1)
-        elif month_first.day == 1 and month_first.time() != '00:00:00':
+        elif month_first.day == 1 and month_first.time() != self.time_00:
             month_start = month_first + relativedelta(months=1) - timedelta(hours=month_first.hour, minutes=month_first.minute, seconds=month_first.second)
         else:
             month_start = month_first
 
+
         month_stop = month_start + relativedelta(months=num) - timedelta(seconds=1)
 
         # dataframe 마지막 데이터 설정
-        if month_last.day != month_last.days_in_month or month_last.time() != '23:59:59':
+        if month_last.day != month_last.days_in_month or month_last.time() != self.time_23:
             month_end = month_last - timedelta(days=month_last.day-1, hours=month_last.hour, minutes=month_last.minute, seconds=month_last.second+1)
         else:
             month_end = month_last
@@ -255,16 +255,57 @@ class CycleData():
 
 
 
-    def getYearCycleSet(self, data, num=1):
+    def getYearCycleSet(self, data, num):
         # Year 단위의 데이터셋 리턴
         year_first = data.index[0]
         year_last = data.index[-1]
 
+        if year_first.strftime("%m-%d") != '01-01' and year_first.time()  != self.time_00:
+            year_start = year_first + relativedelta(years=1) - relativedelta(months=year_first.month-1, days=year_first.day-1, hours=year_first.hour, minutes=year_first.minute, seconds=year_first.second)
+        elif year_first.strftime("%m-%d") != '01-01' and year_first.time()  == self.time_00:
+            year_start = year_first + relativedelta(years=1) - relativedelta(months=year_first.month-1, days=year_first.day-1)
+        elif year_first.strftime("%m-%d") == '01-01' and year_first.time() != self.time_00:
+            year_start = year_first + relativedelta(years=1) - timedelta(hours=year_first.hour, minutes=year_first.minute, seconds=year_first.second)
+        else:
+            year_start = year_first
+
+        year_stop = year_start + relativedelta(years=num) - timedelta(seconds=1)
+
+        year_one_stop = year_start + relativedelta(years=1) - timedelta(seconds=1)
+        year_last_front = year_last - relativedelta(months=year_last.month-1, days=year_last.day-1, hours=year_last.hour, minutes=year_last.minute, seconds=year_last.second)
+
+        # 1년 주기 동안 데이터 개수
+        year_freq_count = len(data[year_start:year_one_stop])
+        # 마지막 연도 데이터 개수
+        year_last_count = len(data[year_last_front:year_last])
+
+        if year_freq_count != year_last_count:
+            year_end = year_last - relativedelta(months=year_last.month-1) - timedelta(days=year_last.day-1, hours=year_last.hour, minutes=year_last.minute, seconds=year_last.second+1)
+        else:
+            year_end = year_last
 
 
-        # if month_last.strftime("%m-%d") != '12-31' or month_last.time() != '23:59:59':
+        year_calcul = (year_end.year - year_start.year) +1
+        year_count = math.ceil(year_calcul / num)
 
         dataFrameCollectionResult = []
+        for i in range(year_count):
+            dataframe_num_year = data[year_start:year_stop]
+            dataFrameCollectionResult.append(dataframe_num_year)
+                       
+            # 저장한 마지막 데이터 범위(23:59:59)에서 1초 추가하여 다음날(00:00:00)로 변경
+            year_start = year_stop + timedelta(seconds=1)
+            year_stop = year_start + relativedelta(years=num) - timedelta(seconds=1)
+
+            if year_start + relativedelta(years=num) > year_end:
+                year_stop = year_end
+
+        print(dataFrameCollectionResult)
+
+  
+
+
+
         return dataFrameCollectionResult
 
 
@@ -316,7 +357,8 @@ if __name__ == '__main__':
     # month cycle test
     db_name ='energy_solar'
     ms_name ='busan'
-    bind_params = {'start_time': '2015-05-16T08:00:00Z', 'end_time': '2020-12-31T23:00:00Z'}
+    bind_params = {'start_time': '2015-05-02T10:00:00Z', 'end_time': '2020-12-31T23:30:00Z'}
+    # bind_params = {'start_time': '2015-05-02T10:00:00Z', 'end_time': '2015-05-03T00:00:00Z'}
 
 
     # data_get = db_setting.get_data(db_name, ms_name)

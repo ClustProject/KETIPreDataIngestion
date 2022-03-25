@@ -12,9 +12,8 @@ def getAllMSDataSetFromInfluxDB(db_client, db_name, bind_params):
         :param query_end_time: query_end_time
         :type query_end_time: pd.datatime
 
-        :returns: ms_list, dataSet
-        
-        :rtype: array of string (measurement list), list of dataframe (ms data)
+        :returns: dataSet
+        :rtype: list of dataframe (ms datasets)
     """
     ms_list = db_client.measurement_list(db_name)
     dataSet ={}

@@ -5,15 +5,20 @@ from dateutil.relativedelta import relativedelta
 from time import time
 from sklearn import datasets
 import math
+
+from sympy import sec
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 from KETIPreDataIngestion.data_influx.influx_Client_v2 import influxClient
 
 
 class CycleData():
     """
-    Prepare Data based on cycle parameter
+    시, 일, 주, 월, 연 단위의 주기를 설정
     """
     def __init__(self):
+        """
+        data의 start시간을 알아내기 위한 변수 - 저장할 모든 데이터는 '00:00:00'부터 시작해야 한다.
+        """
         # self.start, self.end = self.getTimePointByDayUnit(data)
         # self.data = data[self.start: self.end] #(??)
         self.time_00 = datetime.strptime("00:00:00","%H:%M:%S").time()
@@ -21,6 +26,16 @@ class CycleData():
 
     def getHourCycleSet(self, data, num):
         """
+        1시간 단위로 '00:00 ~ 59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
         """
         hour_first = data.index[0]
         hour_last = data.index[-1]
@@ -63,7 +78,17 @@ class CycleData():
     def getDayCycleSet(self, data, num):
         # day 단위의 데이터 셋 리턴
         """
-        """
+        1일 단위로 '00:00:00 ~ 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
+        """""
         # 첫 시간과 마지막 시간 구하기
         day_first = data.index[0]
         day_last = data.index[-1]
@@ -77,13 +102,14 @@ class CycleData():
         # start 시간에서 num만큼의 지난 날(범위를 지정할 때)
         day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
 
+        # 마지막 주기의 데이터가 
         day_one_stop = day_start + timedelta(days=1) - timedelta(seconds=1)
         day_last_front = day_last - timedelta(hours=day_last.hour, minutes=day_last.minute, seconds=day_last.second)
 
         day_freq_count = len(data[day_start:day_one_stop])
         day_last_count = len(data[day_last_front:day_last])
 
-        # 들어온 dataframe의 마지막 시간이 23이 아닐경우 그 전날의 23:59:59로 변경
+        # 첫 주기의 데이터 개수와 마지막 주기의 데이터 개수가 다를 시 day_end 값 수정
         if day_freq_count != day_last_count:
             day_end = day_last - timedelta(hours=day_last.hour, minutes=day_last.minute, seconds=day_last.second+1)
         else:
@@ -91,6 +117,7 @@ class CycleData():
 
         day_count = math.ceil(((day_end - day_start).days + 1) / num)
 
+        # 일 단위로 자른 데이터를 주기에 맞춰 dataframe에 저장 후, dataFrameCollectionResult에 append
         dataFrameCollectionResult = []
         for i in range(day_count):
             dataframe_num_day = data[day_start:day_stop]
@@ -100,6 +127,7 @@ class CycleData():
             day_start = day_stop + timedelta(seconds=1)
             day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
 
+            # 끝 데이터가 day_end보다 클 시, 원본 데이터의 마지막 날을 넘어가므로 day_end를 day_stop 값으로 설정
             if day_start + timedelta(days=num) > day_end:
                 day_stop = day_end
 
@@ -108,7 +136,18 @@ class CycleData():
 
     def getWeekCycleSet(self, data, num):
         # Week 단위의 데이터 셋 리턴
-        # 월~일
+        """
+        일주일 단위로 '월요일 00:00:00 ~ 일요일 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
+        """""
         week_first = data.index[0]
         week_last = data.index[-1]
         
@@ -130,7 +169,6 @@ class CycleData():
         week_freq_count = len(data[week_start:week_one_stop])
         week_last_count = len(data[week_last_front:week_last])
 
-        # dataframe의 마지막 데이터 처리
         if week_freq_count != week_last_count:
             week_end = week_last - timedelta(days=week_last.dayofweek, hours=week_last.hour, minutes=week_last.minute, seconds=week_last.second+1)
         else:
@@ -143,7 +181,6 @@ class CycleData():
             dataframe_num_week = data[week_start:week_stop]
             dataFrameCollectionResult.append(dataframe_num_week)
                        
-            # 저장한 마지막 데이터 범위(23:59:59)에서 1초 추가하여 다음날(00:00:00)로 변경
             week_start = week_stop + timedelta(seconds=1)
             week_stop = week_start + timedelta(weeks=num) - timedelta(seconds=1)
 
@@ -155,6 +192,18 @@ class CycleData():
 
     def getMonthCycleSet(self, data, num):
         #  Month 단위의 데이터셋 리턴
+        """
+        한달 단위로 '1일 00:00:00 ~  해당월의 마지막 일 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
+        """""
         month_first = data.index[0]
         month_last = data.index[-1]
 
@@ -202,6 +251,18 @@ class CycleData():
 
     def getYearCycleSet(self, data, num):
         # Year 단위의 데이터셋 리턴
+        """
+        1년 단위로 '01-01 00:00:00 ~  12-31 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
+        """""
         year_first = data.index[0]
         year_last = data.index[-1]
 
@@ -215,20 +276,14 @@ class CycleData():
         else:
             year_start = year_first
 
-        # dataframe에 저장시킬 데이터의 연도 주기
         year_stop = year_start + relativedelta(years=num) - timedelta(seconds=1)
 
-        ## 마지막 데이터를 계산하기 위한 부분
-        # 첫 번째 연도의 끝 시간
         year_one_stop = year_start + relativedelta(years=1) - timedelta(seconds=1)
-        # 마지막 연도의 첫번째 데이터 
         year_last_front = year_last - relativedelta(months=year_last.month-1, days=year_last.day-1, hours=year_last.hour, minutes=year_last.minute, seconds=year_last.second)
-        # 첫 1년 주기 동안 데이터 개수
+
         year_freq_count = len(data[year_start:year_one_stop])
-        # 마지막 연도 데이터 개수
         year_last_count = len(data[year_last_front:year_last])
 
-        # 마지막 연도의 데이터 개수가 첫번째 연도의 개수와 다르면 마지막 데이터가 부족하다는 뜻 -> year_end를 그 전 연도로 설정
         if year_freq_count != year_last_count:
             year_end = year_last - relativedelta(months=year_last.month-1) - timedelta(days=year_last.day-1, hours=year_last.hour, minutes=year_last.minute, seconds=year_last.second+1)
         else:
@@ -259,22 +314,125 @@ class CycleData():
 
 
 
+    # ----------------------Full Cycle Code Test -----------------------
+    def getDayCycleSet_Test(self, data, num, FullCycle):
+        # day 단위의 데이터 셋 리턴
+        """
+        1일 단위로 '00:00:00 ~ 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
+
+        :param data: 시계열 데이터
+        :type data: dataframe
+
+        :param num: 나눠서 저장할 데이터 주기
+        :type num: int
+
+        :return: dataFrameCollectionResult(시간 단위로 잘라서 저장된 데이터)
+        :rtype: List
+        """""
+        day_first = data.index[0]
+        day_last = data.index[-1]
+
+        if day_first.time() != self.time_00:
+            day_start = day_first + timedelta(days=1) - timedelta(hours=day_first.hour, minutes=day_first.minute, seconds=day_first.second)
+        else:
+            day_start = day_first
+        
+        day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
+
+        day_one_stop = day_start + timedelta(days=1) - timedelta(seconds=1)
+        day_last_front = day_last - timedelta(hours=day_last.hour, minutes=day_last.minute, seconds=day_last.second)
+
+        day_freq_count = len(data[day_start:day_one_stop])
+        day_last_count = len(data[day_last_front:day_last])
+
+        if day_freq_count != day_last_count:
+            day_end = day_last - timedelta(hours=day_last.hour, minutes=day_last.minute, seconds=day_last.second+1)
+        else:
+            day_end = day_last
+
+
+        day_count_test = int((len(data[day_start:day_end])/(day_freq_count*num)))
+
+        if num == 1:
+            day_count_test += 1
+
+        # print("\n----------------------")
+        # print(len(data[day_start:day_end])/day_freq_count)
+        # print((len(data[day_start:day_end])/day_freq_count)/num)
+        # print(day_count_test)
+
+        # day_count = math.ceil(((day_end - day_start).days + 1) / num)
+
+
+        print(day_freq_count)
+        print(num)
+        print(day_freq_count*num)
+        print(len(data[day_start:day_end]))
+        print(len(data[day_start:day_end])/day_freq_count)
+        print(int(len(data[day_start:day_end])/day_freq_count))
+
+        # num = 1 일때 반복 주기를 어떻게 해야하나...
+        # if FullCycle == True:
+        #     day_count_test = math.ceil(((day_end - day_start).days) / num)
+        # else:
+        #     day_count_test = math.ceil(((day_end - day_start).days + 1) / num)
+
+
+        print("\n----------------------")
+
+        dataFrameCollectionResult = []
+        for i in range(day_count_test):
+            dataframe_num_day = data[day_start:day_stop]
+            dataFrameCollectionResult.append(dataframe_num_day)
+                       
+            day_start = day_stop + timedelta(seconds=1)
+            day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
+
+            if FullCycle == True:
+                if day_start + timedelta(days=num) > day_end:
+                    day_stop = day_end
+            else:
+                if day_start + timedelta(days=num) > day_end:
+                    day_stop = day_start - timedelta(seconds=1)
+            
+            # print(day_start)
+            # print(day_stop)
+            # print(day_end)
+            # print("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        
+        print(dataFrameCollectionResult)
+        print("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        print(day_count_test)
+
+        return dataFrameCollectionResult
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
 
-    db_setting = influxClient(ins.CLUSTDataServer2)
+    db_setting = influxClient(ins.CLUSTDataServer3)
     # db_name="energy_wind_power"
     # ms_name="jeju"
 
     # db_name="farm_strawberry_jinan"
     # ms_name="environment"
 
-    db_name="farm_outdoor_air"
-    ms_name="seoul"
+    # db_name="farm_outdoor_air"
+    # ms_name="seoul"
     # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2022-01-14T18:00:00Z'}
-    bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2021-02-14T23:00:00Z'}
+    # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2021-02-14T23:00:00Z'}
 
     # db_name="farm_swine_vibes1"
     # ms_name="CO"
@@ -283,7 +441,7 @@ if __name__ == '__main__':
     # hour cycle test
     db_name = "farm_swine_vibes1"
     ms_name = "CO"
-    bind_params = {'start_time': '2021-10-22T00:00:22Z', 'end_time': '2021-10-27T23:10:22Z'}
+    bind_params = {'start_time': '2021-10-20T00:00:22Z', 'end_time': '2021-11-05T23:10:22Z'}
 
 
     # month cycle test
@@ -298,7 +456,12 @@ if __name__ == '__main__':
     data_get = db_setting.get_data_by_time(bind_params, db_name, ms_name)
     # print(data_get, "\n\n\n")
 
-    hourCycle = CycleData().getHourCycleSet(data_get,3)
+    dayCycle_test = CycleData().getDayCycleSet_Test(data_get, 13, False)
+    # print(dayCycle_test)
+
+
+
+    # hourCycle = CycleData().getHourCycleSet(data_get,3)
     # print(hourCycle)
 
     # dayCycle = CycleData().getDayCycleSet(data_get,3)

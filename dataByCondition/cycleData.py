@@ -75,7 +75,7 @@ class CycleData():
         return dataFrameCollectionResult
 
 
-    def getDayCycleSet(self, data, num):
+    def getDayCycleSet(self, data, num, FullCycle):
         # day 단위의 데이터 셋 리턴
         """
         1일 단위로 '00:00:00 ~ 23:59:59'사이의 데이터를 만드며, num의 수만큼 주기를 설정한다.
@@ -115,13 +115,19 @@ class CycleData():
         else:
             day_end = day_last
 
-        day_count = math.ceil(((day_end - day_start).days + 1) / num)
+        day_count = int((len(data[day_start:day_end])/(day_freq_count*num))) +1
 
         # 일 단위로 자른 데이터를 주기에 맞춰 dataframe에 저장 후, dataFrameCollectionResult에 append
         dataFrameCollectionResult = []
         for i in range(day_count):
             dataframe_num_day = data[day_start:day_stop]
-            dataFrameCollectionResult.append(dataframe_num_day)
+            if len(dataframe_num_day) != day_freq_count*num:
+                if FullCycle == True and len(dataframe_num_day) != 0:
+                    dataFrameCollectionResult.append(dataframe_num_day)
+                else:
+                    pass
+            else:
+                dataFrameCollectionResult.append(dataframe_num_day)
                        
             # 저장한 마지막 데이터 범위(23:59:59)에서 1초 추가하여 다음날(00:00:00)로 변경
             day_start = day_stop + timedelta(seconds=1)
@@ -350,59 +356,24 @@ class CycleData():
         else:
             day_end = day_last
 
-
-        day_count_test = int((len(data[day_start:day_end])/(day_freq_count*num)))
-
-        if num == 1:
-            day_count_test += 1
-
-        # print("\n----------------------")
-        # print(len(data[day_start:day_end])/day_freq_count)
-        # print((len(data[day_start:day_end])/day_freq_count)/num)
-        # print(day_count_test)
-
-        # day_count = math.ceil(((day_end - day_start).days + 1) / num)
-
-
-        print(day_freq_count)
-        print(num)
-        print(day_freq_count*num)
-        print(len(data[day_start:day_end]))
-        print(len(data[day_start:day_end])/day_freq_count)
-        print(int(len(data[day_start:day_end])/day_freq_count))
-
-        # num = 1 일때 반복 주기를 어떻게 해야하나...
-        # if FullCycle == True:
-        #     day_count_test = math.ceil(((day_end - day_start).days) / num)
-        # else:
-        #     day_count_test = math.ceil(((day_end - day_start).days + 1) / num)
-
-
-        print("\n----------------------")
+        day_count = int((len(data[day_start:day_end])/(day_freq_count*num))) +1
 
         dataFrameCollectionResult = []
-        for i in range(day_count_test):
+        for i in range(day_count):
             dataframe_num_day = data[day_start:day_stop]
-            dataFrameCollectionResult.append(dataframe_num_day)
+            if len(dataframe_num_day) != day_freq_count*num:
+                if FullCycle == True and len(dataframe_num_day) != 0:
+                    dataFrameCollectionResult.append(dataframe_num_day)
+                else:
+                    pass
+            else:
+                dataFrameCollectionResult.append(dataframe_num_day)
                        
             day_start = day_stop + timedelta(seconds=1)
             day_stop = day_start + timedelta(days=num) - timedelta(seconds=1)
 
-            if FullCycle == True:
-                if day_start + timedelta(days=num) > day_end:
-                    day_stop = day_end
-            else:
-                if day_start + timedelta(days=num) > day_end:
-                    day_stop = day_start - timedelta(seconds=1)
-            
-            # print(day_start)
-            # print(day_stop)
-            # print(day_end)
-            # print("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        
-        print(dataFrameCollectionResult)
-        print("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        print(day_count_test)
+            if day_start + timedelta(days=num) > day_end:
+                day_stop = day_end
 
         return dataFrameCollectionResult
 
@@ -422,7 +393,7 @@ class CycleData():
 if __name__ == '__main__':
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
 
-    db_setting = influxClient(ins.CLUSTDataServer3)
+    db_setting = influxClient(ins.CLUSTDataServer2)
     # db_name="energy_wind_power"
     # ms_name="jeju"
 
@@ -439,9 +410,18 @@ if __name__ == '__main__':
     # bind_params = {'start_time': '2021-10-25T00:00:00Z', 'end_time': '2021-11-01T23:10:22Z'}
 
     # hour cycle test
-    db_name = "farm_swine_vibes1"
-    ms_name = "CO"
-    bind_params = {'start_time': '2021-10-20T00:00:22Z', 'end_time': '2021-11-05T23:10:22Z'}
+    # db_name = "farm_swine_vibes1"
+    # ms_name = "CO"
+    # bind_params = {'start_time': '2021-10-20T00:00:22Z', 'end_time': '2021-11-05T23:10:22Z'}
+
+    # db_name = "farm_outdoor_air"
+    # ms_name = "seoul"
+    # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2020-07-18T08:00:00Z'}
+
+    db_name = "farm_outdoor_weather"
+    ms_name = "seoul"
+    bind_params = {'start_time': '2019-01-01T01:00:00Z', 'end_time': '2019-01-20T08:00:00Z'}
+
 
 
     # month cycle test
@@ -456,7 +436,7 @@ if __name__ == '__main__':
     data_get = db_setting.get_data_by_time(bind_params, db_name, ms_name)
     # print(data_get, "\n\n\n")
 
-    dayCycle_test = CycleData().getDayCycleSet_Test(data_get, 13, False)
+    dayCycle_test = CycleData().getDayCycleSet_Test(data_get, 7, False)
     # print(dayCycle_test)
 
 

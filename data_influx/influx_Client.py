@@ -171,8 +171,9 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        first.index = pd.to_datetime(first.index)
         first_time = first.index[0]
-
+        first_time = first_time.strftime('%Y-%m-%dT%H:%M:%SZ')
         return first_time
 
 
@@ -195,8 +196,9 @@ class influxClient():
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
+        last.index = pd.to_datetime(last.index)
 
-        last_time = last.index[0]
+        last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%SZ')
         return last_time
 
 
@@ -383,7 +385,10 @@ class influxClient():
         """
         data = self.get_datafront_by_num(10,db_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
-        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
+        frequency = str(RefineFrequency().get_frequencyWith3DataPoints(data))
+        print(frequency)
+        #return {"freq" : frequency}
+        return frequency
 
 
     def get_tagList(self, db_name, ms_name):

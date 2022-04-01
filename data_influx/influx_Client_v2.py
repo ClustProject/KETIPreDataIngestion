@@ -147,6 +147,7 @@ class influxClient():
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
+        
 
         return first_time
 
@@ -358,7 +359,9 @@ class influxClient():
 
         data = self.get_datafront_by_num(10,bk_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
-        return {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
+        result = str(RefineFrequency().get_frequencyWith3DataPoints(data))
+        #result = {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
+        return result
 
 
     """

@@ -601,114 +601,58 @@ class influxClient():
 #     test = influxClient(ins.CLUSTDataServer2)
 #     bk_name="air_indoor_경로당"
 #     ms_name="ICL1L2000235"
-    # bk_name="air_indoor_초등학교"
-    # ms_name="ICW0W2000025"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
-    # bk_name="writetest"
-    # ms_name="wt1"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
-    # bk_name = "air_indoor_아파트"
-    # ms_name = "ICW0W2000781"
 
     # bucket_list = test.get_DBList()
-    # print("\n-----bucket list-----")
     # print(bucket_list)
 
     # measurement_list = test.measurement_list(bk_name)
-    # print("\n-----measurement list-----")
     # print(measurement_list)
 
     # filed_list = test.get_fieldList(bk_name, ms_name)
-    # print("\n-----field list-----")
     # print(filed_list)
 
     # data_get = test.get_data(bk_name, ms_name)
-    # print("\n-----get_data-----")
     # print(data_get)
 
     # first_time = test.get_first_time(bk_name, ms_name)
-    # print("\n-----first_time-----")
-    # print(type(first_time))
     # print(first_time)
-    # print("\n")
 
     # last_time = test.get_last_time(bk_name, ms_name)
-    # print("\n-----last_time-----")
     # print(last_time)
 
     # days = 7
     # bind_params = {'start_time': first_time, 'end_time': last_time, "days":str(days)+"d"}
     # time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
-    # print(time_data.head())
-    # print(time_data.tail())
 
     # datafront = test.get_datafront_by_num("20000",bk_name, ms_name)
-    # print("===== datafront =====")
     # print(datafront)
-
-    # dataend = test.get_dataend_by_num(20000, bk_name, ms_name)
-    # print("===== dataend =====")
-    # print(dataend)
 
     # number = 10
     # bind_params = {'start_time': '2020-02-22T00:00:00Z', 'end_time': '2020-03-22T00:00:00Z'}
     # data_limit_time = test.get_data_limit_by_time(bk_name, ms_name, bind_params, number)
-    # print("========== data limit time==========")
     # print(data_limit_time)
 
     # datafreq = test.get_freq(bk_name, ms_name)
-    # print("===== datafreq =====")
     # print(datafreq)
 
     # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
     # print(datadays)
 
     # tag_list = test.get_tagList(bk_name, ms_name)
-    # print("===== tag list =====")
     # print(tag_list)
 
     # tag_key = 'company'
     # tag_value = test.get_TagValue(bk_name, ms_name, tag_key)
-    # print("===== tag key value =====")
     # print(tag_value)
 
     # tag_value = '컴캐스트'
     # tag_data = test.get_TagGroupData(bk_name, ms_name, tag_key, tag_value)
-    # print("=======tag data========")
     # print(tag_data)
 
-    # print("====================================")
     # ms_lse = test.measurement_list_only_start_end(bk_name)
     # print(ms_lse)
 
-    # BASE_DIR = os.getcwd()
-    # df_file = "/home/leezy/CLUST_KETI/KETIPreDataIngestion/day_wise.csv"
-    # input_file = os.path.join(BASE_DIR, df_file)
-    # df = pd.read_csv(df_file, parse_dates=True, index_col ='Date')
-    # cr_bk = "test1234567"
-    # cr_ms = "test1"
-    # test.write_db(cr_bk, cr_ms, df)
-
-    # time_start = "2020-09-01T00:00:00Z"
-    # time_end = "2021-09-30T23:00:00Z"
-    # by_timestamp = test.get_df_by_timestamp(bk_name, ms_name, time_start, time_end)
-    # print("============== get_df_by_timestamp ==================")
-    # print(by_timestamp)
-
-
-    # intDataInfo ={ "db_info":[
-    #             {"db_name": "air_indoor_경로당",
-    #             "measurement":"ICL1L2000235",
-    #             "end": "2021-08-31 23:58:00",
-    #             "start":"2021-02-04 09:14:00"},
-    #             {"db_name": "air_indoor_경로당",
-    #             "measurement":"ICL1L2000236",
-    #             "end": "2021-08-31 23:58:00",
-    #             "start":"2021-02-03 17:18:00"}
-    #             ]
-    #         }
-
-    # msdataset = test.get_MeasurementDataSet(intDataInfo)
-    # print(msdataset)

@@ -8,7 +8,7 @@ import math
 
 from sympy import sec
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from KETIPreDataIngestion.data_influx.influx_Client_v2 import influxClient
+from KETIPreDataIngestion.data_influx.influx_Client import influxClient
 
 
 class CycleData():
@@ -412,17 +412,22 @@ if __name__ == '__main__':
     # ms_name = "seoul"
     # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2020-07-18T08:00:00Z'}
 
-    # db_name = "farm_outdoor_weather"
-    # ms_name = "seoul"
+    db_name = "farm_outdoor_weather"
+    ms_name = "seoul"
+
+    import pandas as pd
+    query_start_time = pd.to_datetime("2021-02-05 00:00:00")
+    query_end_time = pd.to_datetime("2021-03-05 00:00:00")
+    bind_params = {'end_time':query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
     # bind_params = {'start_time': '2019-01-01T01:00:00Z', 'end_time': '2022-01-10T08:00:00Z'}
 
 
 
     # month cycle test
-    db_name ='energy_solar'
-    ms_name ='busan'
-    # bind_params = {'start_time': '2015-03-16T08:00:00Z', 'end_time': '2020-12-31T22:00:00Z'}
-    bind_params = {'start_time': '2015-03-16T08:00:00Z', 'end_time': '2021-01-01T00:00:00Z'}
+    # db_name ='energy_solar'
+    # ms_name ='busan'
+    # # bind_params = {'start_time': '2015-03-16T08:00:00Z', 'end_time': '2020-12-31T22:00:00Z'}
+    # bind_params = {'start_time': '2015-03-16T08:00:00Z', 'end_time': '2021-01-01T00:00:00Z'}
     # bind_params = {'start_time': '2015-05-02T17:00:00Z', 'end_time': '2015-05-05T03:00:00Z'}
 
 
@@ -434,6 +439,7 @@ if __name__ == '__main__':
     #refine_param2 = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': "3H"}}
     output = DataPreprocessing().get_refinedData(data_get, refine_param)
 
+
     # print(data_get, "\n\n\n")
 
     # dayCycle_test = CycleData().getDayCycleSet_Test(data_get, 7, False)
@@ -444,7 +450,11 @@ if __name__ == '__main__':
     # hourCycle = CycleData().getHourCycleSet(data_get,3)
     # print(hourCycle)
 
-    # dayCycle = CycleData().getDayCycleSet(data_get,3)
+
+    # feature_cycle = '1 hour'
+    # feature_cycle_times = 1
+
+    # dayCycle = CycleData().getDayCycleSet(output,feature_cycle_times, False)
     # print(dayCycle)
 
     # weekCycle = CycleData().getWeekCycleSet(data_get, 6, True)
@@ -453,7 +463,7 @@ if __name__ == '__main__':
     # monthCycle = CycleData().getMonthCycleSet(output, 5, True)
     # print(monthCycle)
 
-    yearCycle = CycleData().getYearCycleSet(data_get, 3, True)
+    # yearCycle = CycleData().getYearCycleSet(data_get, 3, True)
     # print(yearCycle)
 
 

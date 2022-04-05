@@ -509,6 +509,9 @@ class influxClient():
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
     
 
+
+
+
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):
 #             print(i)

@@ -146,7 +146,7 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
+        first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%S')
         
 
         return first_time
@@ -173,7 +173,7 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%SZ')
+        last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%S')
 
         return last_time
 
@@ -184,8 +184,8 @@ class influxClient():
 
         Example
             >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
+                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
         
 
         :param bind_params: end time & start time
@@ -336,7 +336,7 @@ class influxClient():
             df = df.drop(['result', 'table'], axis=1)
             df = df.set_index('_time')
             df = df.groupby(df.index).first()
-            # ).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%SZ')
+            # ).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%S')
             df.index = pd.to_datetime(df.index)
             # index의 중복된 행 중 첫째행을 제외한 나머지 행 삭제
             df = df[~df.index.duplicated(keep='first')]
@@ -503,8 +503,8 @@ class influxClient():
         
         Example
             >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
+                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
         
         :param bind_params: end time & start time
         :type bind_params: dictionary

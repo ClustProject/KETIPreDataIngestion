@@ -173,7 +173,10 @@ class influxClient():
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         first.index = pd.to_datetime(first.index)
         first_time = first.index[0]
-        first_time = first_time.strftime('%Y-%m-%dT%H:%M:%SZ')
+        print(first_time)
+        #first_time = first_time.strftime('%Y-%m-%dT%H:%M:%S')
+        first_time = first_time.strftime('%Y-%m-%dT%H:%M:%S')
+        print(first_time)
         return first_time
 
 
@@ -198,7 +201,8 @@ class influxClient():
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         last.index = pd.to_datetime(last.index)
 
-        last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%SZ')
+        #last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%S')
+        last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%S')
         return last_time
 
 
@@ -231,8 +235,8 @@ class influxClient():
 
         Example
             >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
+                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
         
         **Influx Query**::
 

@@ -393,7 +393,7 @@ client.__del__()
     #     results =[]
     #     for table in query_result:
     #         for record in table.records:
-    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%S'))
 
     #     first_time = results[0]
 
@@ -422,7 +422,7 @@ client.__del__()
     #     results = []
     #     for table in query_result:
     #         for record in table.records:
-    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%SZ'))
+    #             results.append(record.get_time().strftime('%Y-%m-%dT%H:%M:%S'))
 
     #     last_time = results[1]
 
@@ -466,7 +466,7 @@ client.__del__()
     #     df = df.groupby(df.index).first()
     #     print("===== groupby index first =====")
     #     print(df)
-    #     df.index = pd.to_datetime(df.index).strftime('%Y-%m-%dT%H:%M:%SZ')#).astype('int64'))
+    #     df.index = pd.to_datetime(df.index).strftime('%Y-%m-%dT%H:%M:%S')#).astype('int64'))
     #     print("===== to datetime =====")
     #     print(df)
     #     # df = df.drop_duplicates(keep='first') # value값에 같은 값이 있는 행을 제거하는 현상 발생

@@ -60,8 +60,8 @@ get_data_by_time:
 - Get data of the specific mearuement based on start-end duration
 # get_datafront_by_duration(self, start_time, end_time)
     ex> bind_params example
-    bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%SZ'), 
-    'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%SZ')}
+    bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
+    'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
 ```
 ```
 get_data_by_days:

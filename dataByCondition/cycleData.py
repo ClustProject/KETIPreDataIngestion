@@ -416,9 +416,9 @@ if __name__ == '__main__':
     ms_name = "seoul"
 
     import pandas as pd
-    query_start_time = pd.to_datetime("2021-02-05 00:00:00")
-    query_end_time = pd.to_datetime("2021-03-05 00:00:00")
-    bind_params = {'end_time':query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
+    start_time = pd.to_datetime("2021-02-05 00:00:00")
+    end_time = pd.to_datetime("2021-03-05 00:00:00")
+  
     # bind_params = {'start_time': '2019-01-01T01:00:00Z', 'end_time': '2022-01-10T08:00:00Z'}
 
 
@@ -433,7 +433,7 @@ if __name__ == '__main__':
 
     # data_get = db_setting.get_data(db_name, ms_name)
 
-    data_get = db_setting.get_data_by_time(bind_params, db_name, ms_name)
+    data_get = db_setting.get_data_by_time(start_time, end_time, db_name, ms_name)
     from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
     #refine_param2 = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': "3H"}}

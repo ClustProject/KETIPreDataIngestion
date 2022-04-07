@@ -5,7 +5,7 @@ import os
 import pandas as pd
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
-
+UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
 class influxClient():
     """
     Influx DB 2.0 Connection
@@ -43,6 +43,7 @@ class influxClient():
         """
         query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
+        print(query_result)
         ms_list = list(query_result["_value"])
 
         return ms_list
@@ -54,7 +55,6 @@ class influxClient():
 
         :param db_name: bucket(database) 
         :type db_name: string
-
         :return: measurement list
         :rtype: List
         """
@@ -136,7 +136,7 @@ class influxClient():
         :type ms_name: string
 
         :return: first time in data
-        :return: String
+        :return: datetime
         """
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -146,7 +146,7 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        first_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%S')
+        first_time = query_result["_time"][0]#.strftime('%Y-%m-%dT%H:%M:%S')
         
 
         return first_time
@@ -162,7 +162,7 @@ class influxClient():
         :type ms_name: string
 
         :return: last time in data
-        :rtype: String
+        :rtype: datetime
         """
         query = f'''
         from(bucket: "{bk_name}") 
@@ -173,35 +173,32 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        last_time = query_result["_time"][0].strftime('%Y-%m-%dT%H:%M:%S')
+        last_time = query_result["_time"][0]#.strftime('%Y-%m-%dT%H:%M:%S')
 
         return last_time
 
-    def get_data_by_time(self, bind_params, bk_name, ms_name):
+    def get_data_by_time(self, start_time, end_time, bk_name, ms_name):
         """
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
 
-        Example
-            >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
-        
+        :param start_time: start time
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
 
-        :param bind_params: end time & start time
-        :type bind_params: dictionary
+        :param end_time: end time
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
-        :param db_name: bucket(database)  
+        :param db_name: database name
         :type db_name: string
 
-        :param ms_name: measurement 
+        :param ms_name: measurement name
         :type ms_name: string
 
         :return: df, time duration
         :rtype: DataFrame
         """
-        start_time = bind_params['start_time']
-        end_time = bind_params['end_time']
+        start_time= start_time.strftime(UTC_Style)
+        end_time = end_time.strftime(UTC_Style)
 
         query = f'''
         from(bucket: "{bk_name}") 
@@ -216,20 +213,23 @@ class influxClient():
 
         return data_frame
 
-    def get_data_by_days(self, bind_params, bk_name, ms_name):
+    def get_data_by_days(self, end_time, days, bk_name, ms_name):
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
-        
-        **Example**::
 
-            ex> bind_param example
-            bind_params = {'end_time': 1615991400000, 'days': '7d'}
 
-        
-        :param bind_params: end time & duration days
-        :type bind_params: dictionary
+        **Influx Query**::
 
-        :param db_name: bucket(database)  
+            select * from {ms_name} where time >= end_time - days
+
+
+        :param end_time: end time 
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
+
+        :param days: duration days
+        :type days: string ex>'7d'
+
+        :param db_name: database
         :type db_name: string
 
         :param ms_name: measurement
@@ -237,10 +237,9 @@ class influxClient():
 
         :return: df, time duration
         :rtype: DataFrame
-        """
-        end_time = bind_params['end_time']
-        days = bind_params['days']
 
+        """
+        end_time = end_time.strftime(UTC_Style)
         query = f'''
         import "experimental"
         from(bucket: "{bk_name}") 
@@ -488,26 +487,23 @@ class influxClient():
         for i, dbinfo in enumerate(intDataInfo['db_info']):
             bk_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
-            start_time = dbinfo['start'].replace(" ", "T") + "Z"
-            end_time = dbinfo['end'].replace(" ", "T") + "Z"
-            bind_params = {'start_time': start_time, 'end_time': end_time}
-            MSdataSet[i] = self.get_data_by_time(bind_params, bk_name, ms_name)
+
+            MSdataSet[i] = self.get_data_by_time(dbinfo['start'], dbinfo['end'], bk_name, ms_name)
             MSdataSet[i].index.name = 'datetime'
 
         return MSdataSet
 
 
-    def get_data_limit_by_time(self, bind_params, number, bk_name, ms_name):
+    def get_data_limit_by_time(self, start_time, end_time, number, bk_name, ms_name):
         """
         Get the :guilabel:`limit data` of the specific mearuement based on :guilabel:`time duration` (days)
         
-        Example
-            >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
         
-        :param bind_params: end time & start time
-        :type bind_params: dictionary
+        :param start_time: start time
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
+
+        :param end_time: end time 
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
         :param db_name: number(limit) 
         :type db_name: string
@@ -522,9 +518,8 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-        start_time = bind_params['start_time']
-        end_time = bind_params['end_time']
-
+        start_time= start_time.strftime(UTC_Style)
+        end_time = end_time.strftime(UTC_Style)
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: {start_time}, stop: {end_time}) 
@@ -625,21 +620,20 @@ class influxClient():
     # print(last_time)
 
     # days = 7
-    # bind_params = {'start_time': first_time, 'end_time': last_time, "days":str(days)+"d"}
-    # time_data = test.get_data_by_time(bind_params, bk_name, ms_name)
+    # time_data = test.get_data_by_time(start_time, end_time, bk_name, ms_name)
 
     # datafront = test.get_datafront_by_num("20000",bk_name, ms_name)
     # print(datafront)
 
     # number = 10
     # bind_params = {'start_time': '2020-02-22T00:00:00Z', 'end_time': '2020-03-22T00:00:00Z'}
-    # data_limit_time = test.get_data_limit_by_time(bk_name, ms_name, bind_params, number)
+    # data_limit_time = test.get_data_limit_by_time(start_time, end_time, number, db_name, ms_name)
     # print(data_limit_time)
 
     # datafreq = test.get_freq(bk_name, ms_name)
     # print(datafreq)
 
-    # datadays = test.get_data_by_days(bind_params, bk_name, ms_name)
+    # datadays = test.get_data_by_days(end_time,days,  bk_name, ms_name)
     # print(datadays)
 
     # tag_list = test.get_tagList(bk_name, ms_name)

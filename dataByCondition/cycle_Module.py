@@ -78,7 +78,7 @@ def getCycleSelectDataSet(query_data, feature_cycle, feature_cycle_times):
 #     bind_params = {'end_time':query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
 
 
-#     test = db_client.get_data_by_time(bind_params, db_name, ms_name)
+#     test = db_client.get_data_by_time(start_time, end_time, db_name, ms_name)
 
 #     from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
 #     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}

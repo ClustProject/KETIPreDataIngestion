@@ -1,5 +1,5 @@
 import pandas as pd
-def getAllMSDataSetFromInfluxDB(db_client, db_name, bind_params):
+def getAllMSDataSetFromInfluxDB(start_time, end_time, db_client, db_name):
     """
         It returns dataSet from all MS of a speicific DB.
 
@@ -18,6 +18,6 @@ def getAllMSDataSetFromInfluxDB(db_client, db_name, bind_params):
     ms_list = db_client.measurement_list(db_name)
     dataSet ={}
     for ms_name in ms_list:
-        data = db_client.get_data_by_time(bind_params, db_name, ms_name)
+        data = db_client.get_data_by_time(start_time, end_time, db_name, ms_name)
         dataSet[ms_name] = data
     return dataSet

@@ -4,6 +4,8 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(
 from influxdb import InfluxDBClient,DataFrameClient
 import pandas as pd
 
+UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
+Korean_Style = '%Y-%m-%dT%H:%M:%S'
 class influxClient():
     """
     basic influx DB connection
@@ -106,8 +108,8 @@ class influxClient():
             db_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
             self.switch_MS(db_name, ms_name)
-            bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
-            MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
+
+            MSdataSet[i] =self.get_data_by_time(dbinfo['start'], dbinfo['end'], db_name, ms_name)
             MSdataSet[i].index.name ='datetime'
 
         return MSdataSet
@@ -166,17 +168,18 @@ class influxClient():
         :type ms_name: string
 
         :return: first time in data
-        :return: String
+        :return: datetime
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
         first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         first.index = pd.to_datetime(first.index)
         first_time = first.index[0]
+        """
         print(first_time)
-        #first_time = first_time.strftime('%Y-%m-%dT%H:%M:%S')
-        first_time = first_time.strftime('%Y-%m-%dT%H:%M:%S')
+        first_time = first_time.strftime(Korean_Style)
         print(first_time)
+        """
         return first_time
 
 
@@ -194,15 +197,14 @@ class influxClient():
         :type ms_name: string
 
         :return: last time in data
-        :rtype: String
+        :rtype: datetime
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
         last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
         last.index = pd.to_datetime(last.index)
-
-        #last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%S')
-        last_time = last.index[0].strftime('%Y-%m-%dT%H:%M:%S')
+        last_time = last.index[0]
+        #last_time = last_time.strftime(Korean_Style)
         return last_time
 
 
@@ -228,22 +230,21 @@ class influxClient():
         df = self.cleanup_df(df)
         return df
 
-    def get_data_by_time(self, bind_params, db_name, ms_name):
+    def get_data_by_time(self, start_time, end_time, db_name, ms_name):
         """
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
-
-        Example
-            >>> ex> bind_params example
-            >>> bind_params = {'end_time': query_end_time.strftime('%Y-%m-%dT%H:%M:%S'), 
-                            'start_time': query_start_time.strftime('%Y-%m-%dT%H:%M:%S')}
         
         **Influx Query**::
 
             select * from {ms_name} where time >= {start_time} and time < {end_time}
 
-        :param bind_params: end time & start time
-        :type bind_params: dictionary
+        :param start_time: start time
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
+
+        :param end_time: end time
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
+
 
         :param db_name: database 
         :type db_name: string
@@ -254,6 +255,11 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
+        start_time= start_time.strftime(UTC_Style)
+        end_time = end_time.strftime(UTC_Style)
+        bind_params = {'end_time': end_time, 'start_time': start_time}
+
+
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
         df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
@@ -261,23 +267,21 @@ class influxClient():
         return df
 
 
-    def get_data_by_days(self, bind_params, db_name, ms_name):
+    def get_data_by_days(self, end_time, days, db_name, ms_name):
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
-
-        **Example**::
-
-            ex> bind_param example
-            bind_params = {'end_time': 1615991400000, 'days': '7d'}
 
 
         **Influx Query**::
 
-            select * from {ms_name} where time >= bind_params["end_time"] - bind_params["days"]
+            select * from {ms_name} where time >= end_time - days
 
 
-        :param bind_params: end time & duration days
-        :type bind_params: dictionary
+        :param end_time: end time 
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
+
+        :param days: duration days
+        :type days: string ex>'7d'
 
         :param db_name: database
         :type db_name: string
@@ -289,9 +293,10 @@ class influxClient():
         :rtype: DataFrame
 
         """
+        end_time = end_time.strftime(UTC_Style)
         self.switch_MS(db_name, ms_name)
         #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
-        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+bind_params["end_time"]+"'"+" - "+bind_params["days"]
+        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+end_time+"'"+" - "+days
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -391,7 +396,7 @@ class influxClient():
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
         frequency = str(RefineFrequency().get_frequencyWith3DataPoints(data))
         print(frequency)
-        #return {"freq" : frequency}
+
         return frequency
 
 
@@ -484,23 +489,23 @@ class influxClient():
         return value_list
 
     ## miseon
-    def get_df_by_timestamp(self, ms_name, time_start, time_end):
+    def get_df_by_timestamp(self, ms_name, start_time, end_time):
         """
         It returns a table that has data on a measurement(table) in the database from time_start to time_end.
 
         :param table: a feature name you want to investigate
         :type table: str
-        :param time_start: start timestamp for search
-        :type time_start: str
-        :param time_end: end timestamp for search
-        :type time_end: str
+        :param start_time: start timestamp for search
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
+        :param end_time: end timestamp for search
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
         :returns: a table comprised with data from time_start to time_end
         
         :rtype: class:`pandas.core.frame.DataFrame`
         """
         query_string = 'SELECT * FROM "' + ms_name + \
-            '" where time > ' + time_start + ' AND time < '+ time_end
+            '" where time > ' + start_time + ' AND time < '+ end_time
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         return self.cleanup_df(df)
     
@@ -524,7 +529,7 @@ class influxClient():
 #             ms_name = dbinfo['measurement']
 #             self.switch_MS(db_name, ms_name)
 #             bind_params = {'end_time': dbinfo['end'], 'start_time': dbinfo['start']}
-#             MSdataSet[i] =self.get_data_by_time(bind_params, db_name, ms_name)
+#             MSdataSet[i] =self.get_data_by_time(start_time, end_time, db_name, ms_name)
 #             MSdataSet[i].index.name ='datetime'
 
 #         return MSdataSet

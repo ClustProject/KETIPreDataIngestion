@@ -184,10 +184,10 @@ class influxClient():
         *get_datafront_by_duration(self, start_time, end_time)*
 
         :param start_time: start time
-        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp or string
 
         :param end_time: end time
-        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp or string
 
         :param db_name: database name
         :type db_name: string
@@ -198,8 +198,12 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-        start_time= start_time.strftime(UTC_Style)
-        end_time = end_time.strftime(UTC_Style)
+        if isinstance(start_time, str):
+            pass
+        else: #Not String:
+            start_time= start_time.strftime(UTC_Style)
+            end_time = end_time.strftime(UTC_Style)
+
 
         query = f'''
         from(bucket: "{bk_name}") 

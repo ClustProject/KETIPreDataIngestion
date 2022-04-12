@@ -240,10 +240,10 @@ class influxClient():
             select * from {ms_name} where time >= {start_time} and time < {end_time}
 
         :param start_time: start time
-        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp or string
 
         :param end_time: end time
-        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp or string
 
 
         :param db_name: database 
@@ -255,8 +255,11 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-        start_time= start_time.strftime(UTC_Style)
-        end_time = end_time.strftime(UTC_Style)
+        if isinstance(start_time, str):
+            pass
+        else: #Not String:
+            start_time= start_time.strftime(UTC_Style)
+            end_time = end_time.strftime(UTC_Style)
         bind_params = {'end_time': end_time, 'start_time': start_time}
 
 

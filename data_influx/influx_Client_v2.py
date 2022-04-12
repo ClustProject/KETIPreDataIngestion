@@ -3,6 +3,7 @@ from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
 import pandas as pd
+import datetime
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
@@ -43,7 +44,7 @@ class influxClient():
         """
         query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        print(query_result)
+        # print(query_result)
         ms_list = list(query_result["_value"])
 
         return ms_list
@@ -591,11 +592,11 @@ class influxClient():
 
 
 
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     test = influxClient(ins.CLUSTDataServer2)
-#     bk_name="air_indoor_경로당"
-#     ms_name="ICL1L2000235"
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins.CLUSTDataServer2)
+    bk_name="air_indoor_경로당"
+    ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
     # bk_name = "finance_korean_stock"
@@ -604,8 +605,8 @@ class influxClient():
     # bucket_list = test.get_DBList()
     # print(bucket_list)
 
-    # measurement_list = test.measurement_list(bk_name)
-    # print(measurement_list)
+    measurement_list = test.measurement_list(bk_name)
+    print(measurement_list)
 
     # filed_list = test.get_fieldList(bk_name, ms_name)
     # print(filed_list)

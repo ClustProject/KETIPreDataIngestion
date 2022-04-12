@@ -11,15 +11,15 @@ def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times):
     output_data = DataPreprocessing().get_refinedData(query_data, refine_param)
 
     # cycle 주기에 따라 적절한 함수 적용
-    if feature_cycle == '1 hour':
+    if feature_cycle == 'Hour':
         data = CycleData().getHourCycleSet(output_data, feature_cycle_times, False)
-    elif feature_cycle == '1 day':
+    elif feature_cycle == 'Day':
         data = CycleData().getDayCycleSet(output_data, feature_cycle_times, False)
-    elif feature_cycle == '1 week':
+    elif feature_cycle == 'Week':
         data = CycleData().getWeekCycleSet(output_data, feature_cycle_times, False)
-    elif feature_cycle == '1 month':
+    elif feature_cycle == 'Month':
         data = CycleData().getMonthCycleSet(output_data, feature_cycle_times, False)
-    elif feature_cycle == '1 year':
+    elif feature_cycle == 'Year':
         data = CycleData().getYearCycleSet(output_data, feature_cycle_times, False)
 
     return data

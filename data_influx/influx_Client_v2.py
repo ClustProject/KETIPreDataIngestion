@@ -10,6 +10,17 @@ UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
 class influxClient():
     """
     Influx DB 2.0 Connection
+
+        **Standard Influx Query**::
+
+            from(bucket:"bucket_name")
+            |> range(start: start_time, stop: end_time)
+            |> filter(fn: (r) => r._measurement == "measurement_name")
+
+        **change result of Influx 2.0 to Influx 1.8**::
+
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
     """
 
     def __init__(self, influx_setting):
@@ -137,7 +148,7 @@ class influxClient():
         :type ms_name: string
 
         :return: first time in data
-        :return: datetime
+        :return: pandas._libs.tslibs.timestamps.Timestamp
         """
         query = f'''from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
@@ -147,7 +158,7 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        first_time = query_result["_time"][0]#.strftime('%Y-%m-%dT%H:%M:%S')
+        first_time = query_result["_time"][0]
         
 
         return first_time
@@ -163,7 +174,7 @@ class influxClient():
         :type ms_name: string
 
         :return: last time in data
-        :rtype: datetime
+        :rtype: pandas._libs.tslibs.timestamps.Timestamp
         """
         query = f'''
         from(bucket: "{bk_name}") 
@@ -204,7 +215,6 @@ class influxClient():
             start_time= start_time.strftime(UTC_Style)
             end_time = end_time.strftime(UTC_Style)
 
-
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: {start_time}, stop: {end_time}) 
@@ -212,7 +222,6 @@ class influxClient():
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
-
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
 
@@ -221,12 +230,6 @@ class influxClient():
     def get_data_by_days(self, end_time, days, bk_name, ms_name):
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
-
-
-        **Influx Query**::
-
-            select * from {ms_name} where time >= end_time - days
-
 
         :param end_time: end time 
         :type end_time: pandas._libs.tslibs.timestamps.Timestamp
@@ -264,7 +267,7 @@ class influxClient():
         Get the :guilabel:`first N number` data from the specific measurement
         
         :param db_name: number(limit) 
-        :type db_name: string
+        :type db_name: integer
 
         :param db_name: bucket(database)   
         :type db_name: string
@@ -294,7 +297,7 @@ class influxClient():
         Get the :guilabel:`last N number` data from the specific measurement
 
         :param db_name: number(limit) 
-        :type db_name: string
+        :type db_name: integer
 
         :param db_name: bucket(database)  
         :type db_name: string
@@ -364,7 +367,6 @@ class influxClient():
         data = self.get_datafront_by_num(10,bk_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
         result = str(RefineFrequency().get_frequencyWith3DataPoints(data))
-        #result = {"freq" : str(RefineFrequency().get_frequencyWith3DataPoints(data))}
         return result
 
 
@@ -511,7 +513,7 @@ class influxClient():
         :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
         :param db_name: number(limit) 
-        :type db_name: string
+        :type db_name: integer
 
         :param db_name: bucket(database)  
         :type db_name: string
@@ -550,7 +552,7 @@ class influxClient():
         :type ms_name: string
 
         :return: data count
-        :rtype: int
+        :rtype: integer
         """
         query = f'''
         from(bucket: "{bk_name}") 
@@ -596,11 +598,22 @@ class influxClient():
 
 
 
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTDataServer2)
-    bk_name="air_indoor_경로당"
-    ms_name="ICL1L2000235"
+
+
+
+
+
+
+
+
+
+
+
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTDataServer2)
+#     bk_name="air_indoor_경로당"
+#     ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
     # bk_name = "finance_korean_stock"
@@ -609,8 +622,8 @@ if __name__ == "__main__":
     # bucket_list = test.get_DBList()
     # print(bucket_list)
 
-    measurement_list = test.measurement_list(bk_name)
-    print(measurement_list)
+    # measurement_list = test.measurement_list(bk_name)
+    # print(measurement_list)
 
     # filed_list = test.get_fieldList(bk_name, ms_name)
     # print(filed_list)

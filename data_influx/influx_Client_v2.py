@@ -27,6 +27,7 @@ class influxClient():
         self.influx_setting = influx_setting
         self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
 
+
     def get_DBList(self):
         """
         get all bucket(Database) list
@@ -40,6 +41,9 @@ class influxClient():
         bk_list = []
         for bucket in buckets:
             bk_list.append(bucket.name)
+
+        bk_list.remove('_monitoring')
+        bk_list.remove('_tasks')
 
         return bk_list
 
@@ -609,9 +613,9 @@ class influxClient():
 
 
 
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     test = influxClient(ins.CLUSTDataServer2)
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins.CLUSTDataServer2)
 #     bk_name="air_indoor_경로당"
 #     ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
@@ -619,8 +623,8 @@ class influxClient():
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
 
-    # bucket_list = test.get_DBList()
-    # print(bucket_list)
+    bucket_list = test.get_DBList()
+    print(bucket_list)
 
     # measurement_list = test.measurement_list(bk_name)
     # print(measurement_list)

@@ -345,12 +345,19 @@ class influxClient():
         import numpy as np
         if 'result' in df.columns:
             df = df.drop(['result', 'table'], axis=1)
-            df = df.set_index('_time')
+            if '_time' in df.columns:
+                df = df.set_index('_time')
+            elif 'time' in df.columns:
+                df = df.set_index('time')
+            elif 'datetime' in df.columns:
+                df = df.set_index('datetime')
+            else:
+                df = df.set_index(df.columns[0])
+            df.index.name ='time'
+            
             df = df.groupby(df.index).first()
-            # ).astype('int64')) # strftime('%Y-%m-%dT%H:%M:%S')
             df.index = pd.to_datetime(df.index)
             # index의 중복된 행 중 첫째행을 제외한 나머지 행 삭제
-            df = df[~df.index.duplicated(keep='first')]
             df = df.sort_index(ascending=True)
             df.replace("", np.nan, inplace=True)
         else:

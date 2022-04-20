@@ -6,6 +6,7 @@ import pandas as pd
 
 UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
 Korean_Style = '%Y-%m-%dT%H:%M:%S'
+index_columnName= 'time' 
 class influxClient():
     """
     basic influx DB connection
@@ -172,8 +173,8 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+''+'" LIMIT 1'
-        first = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        first.index = pd.to_datetime(first.index)
+        result =pd.DataFrame( self.DBClient.query(query_string).get_points())
+        first =  self.cleanup_df(result)
         first_time = first.index[0]
         """
         print(first_time)
@@ -201,12 +202,12 @@ class influxClient():
         """
         self.switch_MS(db_name, ms_name)
         query_string = 'select * from "'+ms_name+'" ORDER BY DESC LIMIT 1'
-        last = pd.DataFrame(self.DBClient.query(query_string).get_points()).set_index('time')
-        last.index = pd.to_datetime(last.index)
+        result =pd.DataFrame( self.DBClient.query(query_string).get_points())
+        last =  self.cleanup_df(result)
         last_time = last.index[0]
         #last_time = last_time.strftime(Korean_Style)
         return last_time
-
+        
 
     def get_data(self,db_name, ms_name):
         """
@@ -374,13 +375,12 @@ class influxClient():
             df = df.set_index('time')
         elif 'datetime' in df.columns:
             df = df.set_index('datetime')
-        """
+        else:
+            df = df.set_index(df.columns[0])
+        df.index.name ='time'
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))
-        df = df.drop_duplicates(keep='first')
-        """
-        df.index = pd.to_datetime(df.index)#).astype('int64'))
-        df = df[~df.index.duplicated(keep='first')]
+        #df = df[~df.index.duplicated(keep='first')]
         df = df.sort_index(ascending=True)
         df.replace("", np.nan, inplace=True)
         return df

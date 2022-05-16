@@ -371,12 +371,12 @@ class influxClient():
         :rtype: DataFrame
         """
         import numpy as np
+        print("\n*****************************cleanup problem***********************========================")
+        print(df)
         if 'time' in df.columns:
             df = df.set_index('time')
         elif 'datetime' in df.columns:
             df = df.set_index('datetime')
-        else:
-            df = df.set_index(df.columns[0])
         df.index.name ='time'
         df = df.groupby(df.index).first()
         df.index = pd.to_datetime(df.index)#).astype('int64'))

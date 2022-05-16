@@ -351,8 +351,6 @@ class influxClient():
                 df = df.set_index('time')
             elif 'datetime' in df.columns:
                 df = df.set_index('datetime')
-            else:
-                df = df.set_index(df.columns[0])
             df.index.name ='time'
             
             df = df.groupby(df.index).first()

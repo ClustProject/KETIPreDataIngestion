@@ -8,7 +8,7 @@ import math
 
 from sympy import sec
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from KETIPreDataIngestion.data_influx.influx_Client_v2 import influxClient
+from KETIPreDataIngestion.data_influx.influx_Client import influxClient
 
 
 class CycleData():
@@ -384,19 +384,20 @@ class CycleData():
 
 
 
-# if __name__ == '__main__':
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+if __name__ == '__main__':
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
 
-#     db_setting = influxClient(ins.CLUSTDataServer2)
+    db_setting = influxClient(ins.CLUSTDataServer)
     # db_name="energy_wind_power"
     # ms_name="jeju"
 
     # db_name="farm_strawberry_jinan"
     # ms_name="environment"
 
-    # db_name="farm_outdoor_air"
-    # ms_name="seoul"
-    # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2022-01-14T18:00:00Z'}
+    db_name="air_indoor_도서관"
+    ms_name="ICW0W2000087"
+    start_time = '2020-05-30T00:00:00Z'
+    end_time = '2020-06-20T23:00:00Z'
     # bind_params = {'start_time': '2020-07-01T01:00:00Z', 'end_time': '2021-02-14T23:00:00Z'}
 
     # db_name="farm_swine_vibes1"
@@ -433,11 +434,11 @@ class CycleData():
 
     # data_get = db_setting.get_data(db_name, ms_name)
 
-    # data_get = db_setting.get_data_by_time(start_time, end_time, db_name, ms_name)
-    # from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
-    # refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
-    # #refine_param2 = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': "3H"}}
-    # output = DataPreprocessing().get_refinedData(data_get, refine_param)
+    data_get = db_setting.get_data_by_time(start_time, end_time, db_name, ms_name)
+    from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
+    refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
+    #refine_param2 = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': "3H"}}
+    output = DataPreprocessing().get_refinedData(data_get, refine_param)
 
 
     # print(data_get, "\n\n\n")
@@ -452,10 +453,10 @@ class CycleData():
 
 
     # feature_cycle = '1 hour'
-    # feature_cycle_times = 1
+    feature_cycle_times = 1
 
-    # dayCycle = CycleData().getDayCycleSet(output,feature_cycle_times, False)
-    # print(dayCycle)
+    dayCycle = CycleData().getDayCycleSet(output,feature_cycle_times, False)
+    print(dayCycle)
 
     # weekCycle = CycleData().getWeekCycleSet(data_get, 6, True)
     # print(weekCycle)

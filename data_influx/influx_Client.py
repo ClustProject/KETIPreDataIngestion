@@ -371,8 +371,6 @@ class influxClient():
         :rtype: DataFrame
         """
         import numpy as np
-        print("\n*****************************cleanup problem***********************========================")
-        print(df)
         if 'time' in df.columns:
             df = df.set_index('time')
         elif 'datetime' in df.columns:

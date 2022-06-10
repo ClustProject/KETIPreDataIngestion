@@ -277,7 +277,7 @@ class influxClient():
         :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
         :param days: duration days
-        :type days: string ex>'7d'
+        :type days: integer
 
         :param db_name: database
         :type db_name: string

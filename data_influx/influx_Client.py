@@ -315,7 +315,7 @@ class influxClient():
         :type end_time: pandas._libs.tslibs.timestamps.Timestamp
 
         :param days: duration days
-        :type days: string ex>'7d'
+        :type days: string 
 
         :param db_name: database
         :type db_name: string
@@ -333,7 +333,7 @@ class influxClient():
             end_time = end_time.strftime(UTC_Style)
         self.switch_MS(db_name, ms_name)
         #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
-        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+end_time+"'"+" - "+days
+        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+end_time+"'"+" - "+str(days)+"d"
         print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)

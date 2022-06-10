@@ -21,3 +21,35 @@ def getAllMSDataSetFromInfluxDB(start_time, end_time, db_client, db_name):
         data = db_client.get_data_by_time(start_time, end_time, db_name, ms_name)
         dataSet[ms_name] = data
     return dataSet
+
+def get_MeasurementDataSetOnlyNumeric(db_client, intDataInfo):
+        """
+        Get measurement Data Set according to the dbinfo
+        Each function makes dataframe output with "timedate" index.
+
+        :param intDataInfo: intDataInfo
+        :type intDataInfo: dic
+
+        :return: MSdataset
+        :rtype: Dict
+
+        """
+        MSdataSet ={}
+        for i, dbinfo in enumerate(intDataInfo['db_info']):
+            db_name = dbinfo['db_name']
+            ms_name = dbinfo['measurement']
+            tag_key =None
+            tag_value =None 
+            if "tag_key" in dbinfo.keys():
+                if "tag_value" in dbinfo.keys():
+                    tag_key = dbinfo['tag_key']
+                    tag_value = dbinfo['tag_value']
+            
+            
+            # TODO Only Numeric Data
+            import numpy as np
+            multiple_dataset=db_client.get_data_by_time(dbinfo['start'], dbinfo['end'], db_name, ms_name, tag_key, tag_value)
+            MSdataSet[i]  =  multiple_dataset.select_dtypes(include=np.number)
+            MSdataSet[i].index.name ='datetime'
+
+        return MSdataSet

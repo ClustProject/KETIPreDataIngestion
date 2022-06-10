@@ -29,7 +29,7 @@ measurement_list_only_start_end:
 ### Measurement Set
 
 ```
-get_MeasurementDataSet:
+get_MeasurementDataSetOnlyNumeric:
 - Get measurement Data Set according to the dbinfo
 - Each function makes dataframe output with "timedate" index.
 -This class get multiple influx measurement information.

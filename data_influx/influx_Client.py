@@ -92,33 +92,7 @@ class influxClient():
 
 ##### MS Set Function
 
-    def get_MeasurementDataSet(self, intDataInfo):
-        """
-        Get measurement Data Set according to the dbinfo
-        Each function makes dataframe output with "timedate" index.
 
-        :param intDataInfo: intDataInfo
-        :type intDataInfo: dic
-
-        :return: MSdataset
-        :rtype: Dict
-
-        """
-        MSdataSet ={}
-        for i, dbinfo in enumerate(intDataInfo['db_info']):
-            db_name = dbinfo['db_name']
-            ms_name = dbinfo['measurement']
-            tag_key =None
-            tag_value =None 
-            if "tag_key" in dbinfo.keys():
-                if "tag_value" in dbinfo.keys():
-                    tag_key = dbinfo['tag_key']
-                    tag_value = dbinfo['tag_value']
-
-            MSdataSet[i] =self.get_data_by_time(dbinfo['start'], dbinfo['end'], db_name, ms_name, tag_key, tag_value)
-            MSdataSet[i].index.name ='datetime'
-
-        return MSdataSet
 
 
     ##### MS Function

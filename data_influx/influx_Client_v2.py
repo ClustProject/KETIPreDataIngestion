@@ -454,33 +454,6 @@ class influxClient():
         return result
 
 
-    # TODO Define Guard code for ms without tags
-    def get_MeasurementDataSet(self, intDataInfo):
-        """
-        Get measurement Data Set according to the dbinfo
-        Each function makes dataframe output with "timedate" index.
-
-        :param intDataInfo: intDataInfo
-        :type intDataInfo: dic
-
-        :return: MSdataset
-        :rtype: Dict
-        """
-        MSdataSet = {}
-        for i, dbinfo in enumerate(intDataInfo['db_info']):
-            bk_name = dbinfo['db_name']
-            ms_name = dbinfo['measurement']
-            tag_key =None
-            tag_value =None 
-            if "tag_key" in dbinfo.keys():
-                if "tag_name" in dbinfo.keys():
-                    tag_key = dbinfo['tag_key']
-                    tag_value = dbinfo['tag_value']
-            MSdataSet[i] = self.get_data_by_time(dbinfo['start'], dbinfo['end'], bk_name, ms_name, tag_key, tag_value)
-            MSdataSet[i].index.name = 'datetime'
-
-        return MSdataSet
-
 
     def get_data_limit_by_time(self, start_time, end_time, number, bk_name, ms_name, tag_key=None, tag_value=None):
         """

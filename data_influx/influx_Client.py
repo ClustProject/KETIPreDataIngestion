@@ -327,10 +327,14 @@ class influxClient():
         :rtype: DataFrame
 
         """
-        end_time = end_time.strftime(UTC_Style)
+        if isinstance(end_time, str):
+            pass
+        else: #Not String:
+            end_time = end_time.strftime(UTC_Style)
         self.switch_MS(db_name, ms_name)
         #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
         query_string = 'select * from "'+ms_name+'" where time >= '+"'"+end_time+"'"+" - "+days
+        print(query_string)
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -535,9 +539,9 @@ class influxClient():
 #         return MSdataSet
 
 
-# if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     test = influxClient(ins.CLUSTDataServer)
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins.CLUSTDataServer)
 #     db_name="air_indoor_아파트"
 #     ms_name="ICW0W2000781"
 
@@ -554,3 +558,12 @@ class influxClient():
     # aa = test.get_first_time(db_name, ms_name)
     # print(aa)
     # print(type(aa))
+
+    db_name="air_indoor_경로당"
+    ms_name="ICL1L2000235"
+    start_time = '2021-01-01 00:00:00'
+    end_time = '2021-05-30T00:00:00Z'
+    number = 7
+    days = '7'
+    ttt = test.get_data_by_days(end_time, days, db_name, ms_name)
+    print(ttt)

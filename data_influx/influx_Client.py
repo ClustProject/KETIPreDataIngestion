@@ -209,7 +209,7 @@ class influxClient():
         return last_time
         
 
-    def get_data(self,db_name, ms_name):
+    def get_data(self,db_name, ms_name, tag_key=None, tag_value=None):
         """
         Get :guilabel:`all data` of the specific mearuement
 
@@ -221,17 +221,26 @@ class influxClient():
         :type db_name: string
         :param ms_name: measurement 
         :type ms_name: string
+        :param tag_key: tagkey (option)
+        :type ms_name: string
+        :param tag_value: tagValue (option)
+        :type ms_name: string
 
         :return: df, measurement data
         :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
-        query_string = "select * from "+'"'+ms_name+'"'+""
+        if tag_key:
+            if tag_value:
+                query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
+        else:
+            query_string = "select * from "+'"'+ms_name+'"'+""
+
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
-    def get_data_by_time(self, start_time, end_time, db_name, ms_name):
+    def get_data_by_time(self, start_time, end_time, db_name, ms_name, tag_key=None, tag_value=None):
         """
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
@@ -253,6 +262,13 @@ class influxClient():
         :param ms_name: measurement 
         :type ms_name: string
 
+        :param tag_key: tagkey (option)
+        :type ms_name: string
+
+        :param tag_value: tagValue (option)
+        :type ms_name: string
+
+
         :return: df, time duration
         :rtype: DataFrame
         """
@@ -265,9 +281,18 @@ class influxClient():
 
 
         self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
-        df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
-        df = self.cleanup_df(df)
+        if tag_key:
+            if tag_value:
+                
+                query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
+                # TODO : JH 올바른 방법이 아니기 때문에 수정해야함 <- JW 우선 작성함
+                df = pd.DataFrame(self.DBClient.query(query_string).get_points())
+        else:
+            query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
+            df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
+        
+        df = self.cleanup_df(df)[start_time:end_time]
+
         return df
 
 
@@ -426,37 +451,6 @@ class influxClient():
 
         return tagList
 
-
-    def get_TagGroupData(self, db_name, ms_name, tag_key, tag_value):
-        """
-        Get :guilabel:`tag value` set by tag key
-
-        **Influx Query**::
-
-            select * from ms_name WHERE {tag_key} = {tag_value}
-
-
-        :param db_name: database
-        :type db_name: string
-
-        :param ms_name: measurement 
-        :type ms_name: string
-
-        :param tag_key: tag key
-        :type tag_key: string
-
-        :param tag_value: selected tag key data
-        :type tag_value: string
-
-        :return: new dataframe
-        :rtype: DataFrame
-        
-        """
-        self.switch_MS(db_name, ms_name)
-        query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        df = self.cleanup_df(df)
-        return df
 
 
     def get_TagValue(self, db_name, ms_name, tag_key):

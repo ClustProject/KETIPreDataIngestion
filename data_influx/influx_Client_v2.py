@@ -116,7 +116,7 @@ class influxClient():
 
         return field_list
 
-    def get_data(self, bk_name, ms_name):
+    def get_data(self, bk_name, ms_name, tag_key=None, tag_value=None):
         """
         Get :guilabel:`all data` of the specific mearuement, change dataframe
         
@@ -124,17 +124,34 @@ class influxClient():
         :type db_name: string
         :param ms_name: measurement 
         :type ms_name: string
+        :param tag_key: tagkey (option)
+        :type ms_name: string
+
+        :param tag_value: tagValue (option)
+        :type ms_name: string
 
         :return: df, measurement data
         :rtype: DataFrame
         """
-        query = f'''
-        from(bucket:"{bk_name}")
-        |> range(start: 0, stop: now())
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: 0, stop: now()) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                '''
+
+        else:
+            query = f'''
+            from(bucket:"{bk_name}")
+            |> range(start: 0, stop: now())
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query)
         data_frame = self.cleanup_df(data_frame)
@@ -193,7 +210,7 @@ class influxClient():
 
         return last_time
 
-    def get_data_by_time(self, start_time, end_time, bk_name, ms_name):
+    def get_data_by_time(self, start_time, end_time, bk_name, ms_name, tag_key=None, tag_value=None):
         """
         Get data of the specific measurement based on :guilabel:`start-end duration`
         *get_datafront_by_duration(self, start_time, end_time)*
@@ -210,6 +227,12 @@ class influxClient():
         :param ms_name: measurement name
         :type ms_name: string
 
+        :param tag_key: tagkey (option)
+        :type ms_name: string
+
+        :param tag_value: tag_value (option)
+        :type ms_name: string
+
         :return: df, time duration
         :rtype: DataFrame
         """
@@ -219,15 +242,29 @@ class influxClient():
             start_time= start_time.strftime(UTC_Style)
             end_time = end_time.strftime(UTC_Style)
 
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: {start_time}, stop: {end_time}) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: 0, stop: now()) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                '''
+
+        else:
+            query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: {start_time}, stop: {end_time}) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
-        data_frame = self.cleanup_df(data_frame)
+
+        # TODO TagKey Query 몰라서 어쩔 수 없이 start_time~end_time 넣었으나, 추후 수정해야함 (JW)
+        data_frame = self.cleanup_df(data_frame)[start_time:end_time]
 
         return data_frame
 
@@ -455,38 +492,6 @@ class influxClient():
         return tag_value
 
 
-    def get_TagGroupData(self, bk_name, ms_name, tag_key, tag_value):
-        """
-        Get :guilabel:`tag value` set by tag key
-
-        :param db_name: bucket(database) 
-        :type db_name: string
-
-        :param ms_name: measurement 
-        :type ms_name: string
-
-        :param tag_key: tag key
-        :type tag_key: string
-
-        :param tag_value: selected tag key data
-        :type tag_value: string
-
-        :return: new dataframe
-        :rtype: DataFrame
-        """
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
-        query_result = self.DBClient.query_api().query_data_frame(query=query)
-
-        return query_result
-
-
     # TODO Define Guard code for ms without tags
     def get_MeasurementDataSet(self, intDataInfo):
         """
@@ -671,7 +676,7 @@ if __name__ == "__main__":
     # print(tag_value)
 
     # tag_value = '컴캐스트'
-    # tag_data = test.get_TagGroupData(bk_name, ms_name, tag_key, tag_value)
+    # tag_data = test.get_data(bk_name, ms_name, tag_key, tag_value)
     # print(tag_data)
 
     # ms_lse = test.measurement_list_only_start_end(bk_name)

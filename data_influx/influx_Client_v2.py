@@ -246,7 +246,7 @@ class influxClient():
             if tag_value:
                 query = f'''
                 from(bucket: "{bk_name}") 
-                |> range(start: 0, stop: now()) 
+                |> range(start: {start_time}, stop: {end_time}) 
                 |> filter(fn: (r) => r._measurement == "{ms_name}")
                 |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
                 |> drop(columns: ["_start", "_stop", "_measurement"])
@@ -264,11 +264,11 @@ class influxClient():
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
 
         # TODO TagKey Query 몰라서 어쩔 수 없이 start_time~end_time 넣었으나, 추후 수정해야함 (JW)
-        data_frame = self.cleanup_df(data_frame)[start_time:end_time]
+        data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
-    def get_data_by_days(self, end_time, days, bk_name, ms_name):
+    def get_data_by_days(self, end_time, days, bk_name, ms_name, tag_key=None, tag_value=None):
         # TODO TagKey, Value
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
@@ -289,22 +289,38 @@ class influxClient():
         :rtype: DataFrame
 
         """
-        end_time = end_time.strftime(UTC_Style)
-        query = f'''
-        import "experimental"
-        from(bucket: "{bk_name}") 
-        |> range(start: experimental.subDuration(d: {days}, from: {end_time}), stop: now())
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
+        if isinstance(end_time, str):
+            pass
+        else: #Not String:
+            end_time = end_time.strftime(UTC_Style)
+
+        if tag_key:
+            if tag_value:
+                query = f'''
+                import "experimental"
+                from(bucket: "{bk_name}") 
+                |> range(start: experimental.subDuration(d: {days}d, from: {end_time}), stop: now())
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                '''
+        else:
+            query = f'''
+            import "experimental"
+            from(bucket: "{bk_name}") 
+            |> range(start: experimental.subDuration(d: {days}d, from: {end_time}), stop: now())
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            '''
         query_client = self.DBClient.query_api()
         data_frame = query_client.query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
-    def get_datafront_by_num(self, number, bk_name, ms_name):
+    def get_datafront_by_num(self, number, bk_name, ms_name, tag_key=None, tag_value=None):
         # TODO TagKey, Value
         """
         Get the :guilabel:`first N number` data from the specific measurement
@@ -322,20 +338,34 @@ class influxClient():
         :rtype: DataFrame
         """
 
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> limit(n:{number})
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
+
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: 0, stop: now()) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                |> limit(n:{number})
+                '''
+        else:
+            query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: 0, stop: now()) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> limit(n:{number})
+            '''
+
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
 
         return data_frame
 
-    def get_dataend_by_num(self, number, bk_name, ms_name):
+    def get_dataend_by_num(self, number, bk_name, ms_name, tag_key=None, tag_value=None):
         # TODO TagKey, Value
         """
         Get the :guilabel:`last N number` data from the specific measurement
@@ -352,15 +382,28 @@ class influxClient():
         :return: df, last N(number) row data in measurement
         :rtype: DataFrame
         """
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: 0, stop: now()) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                |> tail(n:{number})
+                '''
 
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: 0, stop: now()) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> tail(n:{number})
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
+        else:
+            query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: 0, stop: now()) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> tail(n:{number})
+            '''
+
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
         data_frame = self.cleanup_df(data_frame)
 
@@ -439,60 +482,63 @@ class influxClient():
         return data_frame
     """
 
-    def get_tagList(self, bk_name, ms_name):
-        """
-        Get :guilabel:`all tag keys` list of the specific measurement. \n
 
-        :param db_name: bucket(database) 
-        :type db_name: string
+    
+    # def get_tagList(self, bk_name, ms_name):
+    #     """
+    #     Get :guilabel:`all tag keys` list of the specific measurement. \n
 
-        :param ms_name: measurement
-        :type ms_name: string
+    #     :param db_name: bucket(database) 
+    #     :type db_name: string
 
-        :return: tagList, measurement tag keys
-        :rtpye: List
-        """
+    #     :param ms_name: measurement
+    #     :type ms_name: string
 
-        query = f'''
-        import "influxdata/influxdb/schema"
-        schema.measurementTagKeys(bucket: "{bk_name}", measurement: "{ms_name}")
-        '''
-        query_result = self.DBClient.query_api().query_data_frame(query=query)
-        tag_list_value = list(query_result["_value"])
-        tag_list = tag_list_value[4:]
+    #     :return: tagList, measurement tag keys
+    #     :rtpye: List
+    #     """
 
-        return tag_list
+    #     query = f'''
+    #     import "influxdata/influxdb/schema"
+    #     schema.measurementTagKeys(bucket: "{bk_name}", measurement: "{ms_name}")
+    #     '''
+    #     query_result = self.DBClient.query_api().query_data_frame(query=query)
+    #     tag_list_value = list(query_result["_value"])
+    #     tag_list = tag_list_value[4:]
+
+    #     return tag_list
 
 
-    def get_TagValue(self, bk_name, ms_name, tag_key):
-        """
-        Get :guilabel:`unique value` of selected tag key
+    # def get_TagValue(self, bk_name, ms_name, tag_key):
+    #     """
+    #     Get :guilabel:`unique value` of selected tag key
 
-        :param db_name: bucket(database) 
-        :type db_name: string
+    #     :param db_name: bucket(database) 
+    #     :type db_name: string
 
-        :param ms_name: measurement
-        :type ms_name: string
+    #     :param ms_name: measurement
+    #     :type ms_name: string
 
-        :param tag_key: select tag key data
-        :type tag_key: string
+    #     :param tag_key: select tag key data
+    #     :type tag_key: string
 
-        :return: unique tag value list
-        :rtype: List
-        """
+    #     :return: unique tag value list
+    #     :rtype: List
+    #     """
 
-        query = f'''
-        import "influxdata/influxdb/schema"
+    #     query = f'''
+    #     import "influxdata/influxdb/schema"
 
-        schema.measurementTagValues(
-            bucket: "{bk_name}",
-            tag: "{tag_key}",
-            measurement: "{ms_name}" )
-        '''
-        query_result = self.DBClient.query_api().query_data_frame(query=query)
-        tag_value = list(query_result["_value"])
+    #     schema.measurementTagValues(
+    #         bucket: "{bk_name}",
+    #         tag: "{tag_key}",
+    #         measurement: "{ms_name}" )
+    #     '''
+    #     query_result = self.DBClient.query_api().query_data_frame(query=query)
+    #     tag_value = list(query_result["_value"])
 
-        return tag_value
+    #     return tag_value
+
 
 
     # TODO Define Guard code for ms without tags
@@ -542,15 +588,18 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
-        start_time= start_time.strftime(UTC_Style)
-        end_time = end_time.strftime(UTC_Style)
+        if isinstance(start_time, str):
+            pass
+        else: #Not String:
+            start_time= start_time.strftime(UTC_Style)
+            end_time = end_time.strftime(UTC_Style)
         query = f'''
         from(bucket: "{bk_name}") 
         |> range(start: {start_time}, stop: {end_time}) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
         |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> limit(n:{number})
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> limit(n:{number})
         '''
         data_frame = self.DBClient.query_api().query_data_frame(query)
         data_frame = self.cleanup_df(data_frame)
@@ -606,6 +655,23 @@ class influxClient():
 
 
 
+# ---------------------------------- new function ------------------------------
+    def get_tagList(self, bk_name, ms_name):
+
+        query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: 0, stop: now()) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> group(columns: ["_field"])
+            |> drop(columns: ["_start", "_stop", "_measurement","_field","_value","_time"])
+            |> limit(n:1)
+            '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        tag_list = list(query_result.columns[2:])
+
+        return tag_list
+
+
 
 
 
@@ -629,15 +695,16 @@ class influxClient():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTDataServer2)
-#     bk_name="air_indoor_경로당"
-#     ms_name="ICL1L2000235"
+    bk_name="air_indoor_경로당"
+    ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
-
-    bucket_list = test.get_DBList()
-    print(bucket_list)
+    # bk_name ='bio_covid_vaccinations'
+    # ms_name="argentina"
+    # bucket_list = test.get_DBList()
+    # print(bucket_list)
 
     # measurement_list = test.measurement_list(bk_name)
     # print(measurement_list)
@@ -648,28 +715,34 @@ if __name__ == "__main__":
     # data_get = test.get_data(bk_name, ms_name)
     # print(data_get)
 
-    # first_time = test.get_first_time(bk_name, ms_name)
-    # print(first_time)
+    first_time = test.get_first_time(bk_name, ms_name)
+    print(first_time)
 
-    # last_time = test.get_last_time(bk_name, ms_name)
-    # print(last_time)
+    last_time = test.get_last_time(bk_name, ms_name)
+    print(last_time)
 
-    # days = 7
+    days = 7
     # time_data = test.get_data_by_time(start_time, end_time, bk_name, ms_name)
 
-    # datafront = test.get_datafront_by_num("20000",bk_name, ms_name)
+    # datafront = test.get_datafront_by_num(7,bk_name, ms_name)
     # print(datafront)
 
     # number = 10
     # bind_params = {'start_time': '2020-02-22T00:00:00Z', 'end_time': '2020-03-22T00:00:00Z'}
-    # data_limit_time = test.get_data_limit_by_time(start_time, end_time, number, db_name, ms_name)
+    start_time = '2021-01-01T00:00:00Z'
+    end_time = '2021-05-30T00:00:00Z'
+    number = 7
+    # data_limit_time = test.get_data_limit_by_time(start_time, end_time, number, bk_name, ms_name)
     # print(data_limit_time)
+
+    # data_end_time = test.get_dataend_by_num(number, bk_name, ms_name)
+    # print(data_end_time)
 
     # datafreq = test.get_freq(bk_name, ms_name)
     # print(datafreq)
 
-    # datadays = test.get_data_by_days(end_time,days,  bk_name, ms_name)
-    # print(datadays)
+    datadays = test.get_data_by_days(end_time,days,  bk_name, ms_name)
+    print(datadays)
 
     # tag_list = test.get_tagList(bk_name, ms_name)
     # print(tag_list)

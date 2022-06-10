@@ -492,26 +492,6 @@ class influxClient():
 
         return value_list
 
-    ## miseon
-    def get_df_by_timestamp(self, ms_name, start_time, end_time):
-        """
-        It returns a table that has data on a measurement(table) in the database from time_start to time_end.
-
-        :param table: a feature name you want to investigate
-        :type table: str
-        :param start_time: start timestamp for search
-        :type start_time: pandas._libs.tslibs.timestamps.Timestamp
-        :param end_time: end timestamp for search
-        :type end_time: pandas._libs.tslibs.timestamps.Timestamp
-
-        :returns: a table comprised with data from time_start to time_end
-        
-        :rtype: class:`pandas.core.frame.DataFrame`
-        """
-        query_string = 'SELECT * FROM "' + ms_name + \
-            '" where time > ' + start_time + ' AND time < '+ end_time
-        df = pd.DataFrame(self.DBClient.query(query_string).get_points())
-        return self.cleanup_df(df)
     
     def write_db(self, df, table):
         """Write data to the influxdb

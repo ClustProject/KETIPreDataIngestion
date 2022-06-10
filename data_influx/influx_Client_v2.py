@@ -461,28 +461,6 @@ class influxClient():
         result = str(RefineFrequency().get_frequencyWith3DataPoints(data))
         return result
 
-
-    """
-    def get_df_by_timestamp(self, bk_name, ms_name, time_start, time_end):
-        
-        # It returns a table that has data on a measurement(table) in the database from time_start to time_end.
-        
-
-        query = f'''
-        from(bucket: "{bk_name}") 
-        |> range(start: {time_start}, stop: {time_end}) 
-        |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> drop(columns: ["_start", "_stop", "_measurement"])
-        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-        '''
-        query_client = self.DBClient.query_api()
-        data_frame = query_client.query_data_frame(query)
-        data_frame = self.cleanup_df(data_frame)
-
-        return data_frame
-    """
-
-
     
     # def get_tagList(self, bk_name, ms_name):
     #     """

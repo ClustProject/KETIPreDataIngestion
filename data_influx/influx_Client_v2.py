@@ -4,6 +4,8 @@ import sys
 import os
 import pandas as pd
 import datetime
+
+from sqlalchemy import column
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
@@ -59,6 +61,7 @@ class influxClient():
         """
         query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         query_result = self.DBClient.query_api().query_data_frame(query=query)
+        print(query_result)
         ms_list = list(query_result["_value"])
 
         return ms_list
@@ -616,48 +619,37 @@ class influxClient():
         return tag_list
 
 
+    def get_TagValue(self, bk_name, ms_name, tag_key):
+        """
+        Get :guilabel:`unique value` of selected tag key
 
+        :param db_name: bucket(database) 
+        :type db_name: string
 
+        :param ms_name: measurement
+        :type ms_name: string
 
+        :param tag_key: select tag key data
+        :type tag_key: string
 
+        :return: unique tag value list
+        :rtype: List
+        """
 
+        query = f'''
+        import "experimental/query"
 
-    # def get_TagValue(self, bk_name, ms_name, tag_key):
-    #     """
-    #     Get :guilabel:`unique value` of selected tag key
+        query.fromRange(bucket: "{bk_name}", start:0)
+        |> query.filterMeasurement(
+            measurement: "{ms_name}")
+        |> keys()
+        |> distinct(column: "{tag_key}")
+        '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        query_result = query_result.drop_duplicates([tag_key])
+        tag_value = list(query_result[tag_key])
 
-    #     :param db_name: bucket(database) 
-    #     :type db_name: string
-
-    #     :param ms_name: measurement
-    #     :type ms_name: string
-
-    #     :param tag_key: select tag key data
-    #     :type tag_key: string
-
-    #     :return: unique tag value list
-    #     :rtype: List
-    #     """
-
-    #     query = f'''
-    #     import "influxdata/influxdb/schema"
-
-    #     schema.measurementTagValues(
-    #         bucket: "{bk_name}",
-    #         tag: "{tag_key}",
-    #         measurement: "{ms_name}" )
-    #     '''
-    #     query_result = self.DBClient.query_api().query_data_frame(query=query)
-    #     tag_value = list(query_result["_value"])
-
-    #     return tag_value
-
-
-
-
-
-
-
+        return tag_value
 
 
 
@@ -671,12 +663,12 @@ class influxClient():
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTDataServer2)
-    bk_name="air_indoor_경로당"
-    ms_name="ICL1L2000235"
+    # bk_name="air_indoor_경로당"
+    # ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
-    # bk_name = "finance_korean_stock"
-    # ms_name = "stock"
+    bk_name = "finance_korean_stock"
+    ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'
     # ms_name="argentina"
     start_time = '2021-01-01T00:00:00Z'
@@ -687,3 +679,11 @@ if __name__ == "__main__":
     tag_value = 'GS리테일'
 
 
+    aa = test.get_TagValue(bk_name, ms_name, tag_key)
+    print(aa)
+
+    # aa= test.get_fieldList(bk_name, ms_name)
+    # print(aa)
+
+    # aa = test.measurement_list(bk_name)
+    # print(aa)

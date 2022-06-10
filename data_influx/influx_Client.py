@@ -210,7 +210,6 @@ class influxClient():
         result =pd.DataFrame( self.DBClient.query(query_string).get_points())
         last =  self.cleanup_df(result)
         last_time = last.index[0]
-        #last_time = last_time.strftime(Korean_Style)
         return last_time
         
 
@@ -284,24 +283,22 @@ class influxClient():
             end_time = end_time.strftime(UTC_Style)
         bind_params = {'end_time': end_time, 'start_time': start_time}
 
-
         self.switch_MS(db_name, ms_name)
         if tag_key:
             if tag_value:
-                
-                query_string = 'select * from "'+ms_name+'" WHERE "'+tag_key+'"=\''+tag_value+'\''
-                # TODO : JH 올바른 방법이 아니기 때문에 수정해야함 <- JW 우선 작성함
+                query_string = f''' select * from "{ms_name}" where time >= '{start_time}' and time < '{end_time}' and "{tag_key}"='{tag_value}' '''
                 df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         else:
-            query_string = 'select * from "'+ms_name+'" where time >= $start_time and time < $end_time'
-            df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
+            query_string = f''' select * from "{ms_name}" where time >= '{start_time}' and time < '{end_time}' '''
+            # df = pd.DataFrame(self.DBClient.query(query_string, bind_params = bind_params).get_points())
+            df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         
-        df = self.cleanup_df(df)[start_time:end_time]
+        df = self.cleanup_df(df)
 
         return df
 
 
-    def get_data_by_days(self, end_time, days, db_name, ms_name):
+    def get_data_by_days(self, end_time, days, db_name, ms_name, tag_key=None, tag_value=None):
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
 
@@ -332,15 +329,18 @@ class influxClient():
         else: #Not String:
             end_time = end_time.strftime(UTC_Style)
         self.switch_MS(db_name, ms_name)
-        #query_string = 'select * from "'+ms_name+'" where time >= '+bind_params["end_time"]+" - "+bind_params["days"]
-        query_string = 'select * from "'+ms_name+'" where time >= '+"'"+end_time+"'"+" - "+str(days)+"d"
-        print(query_string)
+        if tag_key:
+            if tag_value:
+                query_string = f''' select * from "{ms_name}" where time >= '{end_time}' -{str(days)}d and "{tag_key}"='{tag_value}' '''
+        else:
+            query_string = f''' select * from "{ms_name}" where time >= '{end_time}' -{str(days)}d '''
+
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
 
-    def get_datafront_by_num(self, number, db_name, ms_name):
+    def get_datafront_by_num(self, number, db_name, ms_name, tag_key=None, tag_value=None):
         """
         Get the :guilabel:`first N number` data from the specific measurement
         
@@ -360,13 +360,17 @@ class influxClient():
         :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'SELECT * FROM "' + ms_name +'" LIMIT '+ str(number) +""
+        if tag_key:
+            if tag_value:
+                query_string = f''' select * from "{ms_name}" where "{tag_key}"='{tag_value}' limit {str(number)}'''
+        else:
+            query_string = 'SELECT * FROM "' + ms_name +'" LIMIT '+ str(number) +""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
 
 
-    def get_dataend_by_num(self, number, db_name, ms_name):
+    def get_dataend_by_num(self, number, db_name, ms_name, tag_key=None, tag_value=None):
         """
         Get the :guilabel:`last N number` data from the specific measurement
 
@@ -384,7 +388,11 @@ class influxClient():
         :rtype: DataFrame
         """
         self.switch_MS(db_name, ms_name)
-        query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
+        if tag_key:
+            if tag_value:
+                query_string = f''' select * from "{ms_name}" where "{tag_key}"='{tag_value}' order by desc limit {str(number)}'''
+        else:
+            query_string = 'SELECT * FROM "' + ms_name +'" ORDER BY DESC LIMIT '+ str(number) +""
         df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         df = self.cleanup_df(df)
         return df
@@ -417,7 +425,7 @@ class influxClient():
         df.replace("", np.nan, inplace=True)
         return df
 
-    def get_freq(self, db_name, ms_name):
+    def get_freq(self, db_name, ms_name, tag_key=None, tag_value=None):
         """
         :param db_name: database
         :type db_name: string
@@ -427,7 +435,11 @@ class influxClient():
         :return: freq
         :rtype: Dict
         """
-        data = self.get_datafront_by_num(10,db_name, ms_name)
+        if tag_key:
+            if tag_value:
+                data = self.get_datafront_by_num(10,db_name, ms_name,tag_key, tag_value)
+        else:
+            data = self.get_datafront_by_num(10,db_name, ms_name)
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
         frequency = str(RefineFrequency().get_frequencyWith3DataPoints(data))
         print(frequency)
@@ -496,9 +508,7 @@ class influxClient():
     def write_db(self, df, table):
         """Write data to the influxdb
         """
-
         frameClient = DataFrameClient(self.influx_setting['host'],self.influx_setting['port'],self.influx_setting['user'],self.influx_setting['password'],self.db_name)
-   
         frameClient.write_points(df, table, batch_size=10000) # protocol=self.protocol
     
 
@@ -519,31 +529,29 @@ class influxClient():
 #         return MSdataSet
 
 
+
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTDataServer)
 #     db_name="air_indoor_아파트"
 #     ms_name="ICW0W2000781"
-
-#     first_time = test.get_first_time(db_name, ms_name)
-#     print("\n-----first_time-----")
-#     print(type(first_time))
-#     print(first_time)
-#     print("\n")
-
-#     last_time = test.get_last_time(db_name, ms_name)
-#     print("\n-----last_time-----")
-#     print(last_time)
-
-    # aa = test.get_first_time(db_name, ms_name)
-    # print(aa)
-    # print(type(aa))
-
     db_name="air_indoor_경로당"
     ms_name="ICL1L2000235"
-    start_time = '2021-01-01 00:00:00'
-    end_time = '2021-05-30T00:00:00Z'
+    start_time = '2021-05-01T00:00:00Z'
+    end_time = '2021-08-31T00:00:00Z'
+    # db_name = "finance_korean_stock"
+    # ms_name = "stock"
+    # start_time = '2022-01-01T00:00:00Z'
+    # end_time = '2022-02-28T00:00:00Z' 
     number = 7
-    days = '7'
-    ttt = test.get_data_by_days(end_time, days, db_name, ms_name)
-    print(ttt)
+    days = 7
+    tag_key = 'company'
+    tag_value = 'GS리테일'

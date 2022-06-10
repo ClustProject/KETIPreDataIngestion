@@ -269,6 +269,7 @@ class influxClient():
         return data_frame
 
     def get_data_by_days(self, end_time, days, bk_name, ms_name):
+        # TODO TagKey, Value
         """
         Get data of the specific mearuement based on :guilabel:`time duration` (days)
 
@@ -304,6 +305,7 @@ class influxClient():
         return data_frame
 
     def get_datafront_by_num(self, number, bk_name, ms_name):
+        # TODO TagKey, Value
         """
         Get the :guilabel:`first N number` data from the specific measurement
         
@@ -334,6 +336,7 @@ class influxClient():
         return data_frame
 
     def get_dataend_by_num(self, number, bk_name, ms_name):
+        # TODO TagKey, Value
         """
         Get the :guilabel:`last N number` data from the specific measurement
 

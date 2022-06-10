@@ -517,15 +517,18 @@ if __name__ == "__main__":
     test = influxClient(ins.CLUSTDataServer)
 #     db_name="air_indoor_아파트"
 #     ms_name="ICW0W2000781"
-    db_name="air_indoor_경로당"
-    ms_name="ICL1L2000235"
-    start_time = '2021-05-01T00:00:00Z'
-    end_time = '2021-08-31T00:00:00Z'
-    # db_name = "finance_korean_stock"
-    # ms_name = "stock"
-    # start_time = '2022-01-01T00:00:00Z'
-    # end_time = '2022-02-28T00:00:00Z' 
+    # db_name="air_indoor_경로당"
+    # ms_name="ICL1L2000235"
+    # start_time = '2021-05-01T00:00:00Z'
+    # end_time = '2021-08-31T00:00:00Z'
+    db_name = "finance_korean_stock"
+    ms_name = "stock"
+    start_time = '2022-01-01T00:00:00Z'
+    end_time = '2022-02-28T00:00:00Z' 
     number = 7
     days = 7
     tag_key = 'company'
     tag_value = 'GS리테일'
+
+    aa = test.get_TagValue(db_name, ms_name, tag_key)
+    print(len(aa))

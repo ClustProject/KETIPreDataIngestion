@@ -511,8 +511,13 @@ class influxClient():
         for i, dbinfo in enumerate(intDataInfo['db_info']):
             bk_name = dbinfo['db_name']
             ms_name = dbinfo['measurement']
-
-            MSdataSet[i] = self.get_data_by_time(dbinfo['start'], dbinfo['end'], bk_name, ms_name)
+            tag_key =None
+            tag_value =None 
+            if "tag_key" in dbinfo.keys():
+                if "tag_name" in dbinfo.keys():
+                    tag_key = dbinfo['tag_key']
+                    tag_value = dbinfo['tag_value']
+            MSdataSet[i] = self.get_data_by_time(dbinfo['start'], dbinfo['end'], bk_name, ms_name, tag_key, tag_value)
             MSdataSet[i].index.name = 'datetime'
 
         return MSdataSet

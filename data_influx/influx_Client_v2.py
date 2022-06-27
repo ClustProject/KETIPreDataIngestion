@@ -113,9 +113,10 @@ class influxClient():
         |> keys()
         |> distinct(column: "_field")
         '''
+        
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         field_list = list(query_result["_field"])
-
+        field_list = list(set(field_list))
         return field_list
 
     def get_data(self, bk_name, ms_name, tag_key=None, tag_value=None):

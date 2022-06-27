@@ -540,7 +540,7 @@ if __name__ == "__main__":
         # end = time.time()
         # print("============time=================")
         # print(end - start)
-        
+        field_list = list(set(field_list))
         return field_list
 
 

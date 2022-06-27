@@ -5,11 +5,11 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(
 from KETIPreDataIngestion.dataByCondition.cycleData import CycleData
 
 
-def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times):
+def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, freq_min=None):
     from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
-    refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
+    refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': freq_min}}
     output_data = DataPreprocessing().get_refinedData(query_data, refine_param)
-
+    print(output_data)
     # cycle 주기에 따라 적절한 함수 적용
     if feature_cycle == 'Hour':
         data = CycleData().getHourCycleSet(output_data, feature_cycle_times, False)
@@ -25,9 +25,8 @@ def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times):
     return data
 
 
-def getCycleSelectDataSet(query_data, feature_cycle, feature_cycle_times):
-
-    data_list = getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times)
+def getCycleSelectDataSet(query_data, feature_cycle, feature_cycle_times, freq_min=None):
+    data_list = getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, freq_min)
     dataSet = {}
     for data_slice in data_list:
         index_name = data_slice.index[0].strftime('%Y-%m-%d %H:%M:%S')

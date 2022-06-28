@@ -630,12 +630,23 @@ class influxClient():
     def close_db(self) :
         self.DBClient.close()
 
+    #아직 개발 진행중
     def delete_measurement(self, bk_name) :
         start = 0
         import datetime
         stop = datetime.datetime.now()
         delete_api = self.DBClient.delete_api()
         delete_api.delete(start = start, stop = stop, predicate = '', bucket = bk_name, org = self.influx_setting["org"])
+
+    def write_db_2(self, bk_name, ms_name, data_frame):
+        """
+        Write data to the influxdb
+        """
+        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
+     
+        write_client.write(bucket=bk_name, record=data_frame, data_frame_measurement_name=ms_name)
+        print("========== write success ==========")
+        
 
 
 

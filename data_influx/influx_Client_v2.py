@@ -3,7 +3,7 @@ from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
 import pandas as pd
-import datetime
+from datetime import datetime
 
 from sqlalchemy import column
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -240,9 +240,13 @@ class influxClient():
         :rtype: DataFrame
         """
         if isinstance(start_time, str):
-            pass
+            if start_time not in 'T':
+                start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+                end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+            else:
+                pass
         else: #Not String:
-            start_time= start_time.strftime(UTC_Style)
+            start_time = start_time.strftime(UTC_Style)
             end_time = end_time.strftime(UTC_Style)
 
         if tag_key:
@@ -290,7 +294,10 @@ class influxClient():
 
         """
         if isinstance(end_time, str):
-            pass
+            if end_time not in 'T':
+                end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+            else:
+                pass
         else: #Not String:
             end_time = end_time.strftime(UTC_Style)
 
@@ -486,9 +493,13 @@ class influxClient():
         :rtype: DataFrame
         """
         if isinstance(start_time, str):
-            pass
+            if start_time not in 'T':
+                start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+                end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+            else:
+                pass
         else: #Not String:
-            start_time= start_time.strftime(UTC_Style)
+            start_time = start_time.strftime(UTC_Style)
             end_time = end_time.strftime(UTC_Style)
         
         if tag_key:
@@ -652,20 +663,23 @@ if __name__ == "__main__":
     # ms_name="ICL1L2000235"
     # bk_name="bio_covid_infected_world"
     # ms_name="england"
-    bk_name = "finance_korean_stock"
-    ms_name = "stock"
-    # bk_name ='bio_covid_vaccinations'
-    # ms_name="argentina"
-    start_time = '2021-01-01T00:00:00Z'
-    end_time = '2021-05-30T00:00:00Z'
-    number = 7
-    days = 7
-    tag_key = 'company'
-    tag_value = 'GS리테일'
+    # bk_name = "finance_korean_stock"
+    # ms_name = "stock"
+    bk_name ='bio_covid_vaccinations'
+    ms_name="argentina"
+    start_time = '2021-01-01 00:00:00'
+    end_time = '2022-05-30 00:00:00'
+    # number = 7
+    # days = 7
+    # tag_key = 'company'
+    # tag_value = 'GS리테일'
 
-
-    aa = test.get_TagValue(bk_name, ms_name, tag_key)
+    aa = test.get_data_by_time(start_time,end_time,bk_name,ms_name)
     print(aa)
+
+
+    # aa = test.get_TagValue(bk_name, ms_name, tag_key)
+    # print(aa)
 
     # aa= test.get_fieldList(bk_name, ms_name)
     # print(aa)

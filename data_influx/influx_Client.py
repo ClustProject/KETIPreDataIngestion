@@ -130,7 +130,7 @@ class influxClient():
         query_string = "SHOW FIELD KEYS"
         fieldkeys = list(self.DBClient.query(query_string).get_points(measurement=ms_name))
         fieldList = list(x['fieldKey'] for x in fieldkeys)
-
+        fieldList = list(set(fieldList))
         return fieldList
 
 

@@ -1,4 +1,4 @@
-from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
@@ -638,6 +638,139 @@ class influxClient():
         delete_api.delete(start = start, stop = stop, predicate = '', bucket = bk_name, org = self.influx_setting["org"])
 
 
+# -----------------------------------------------------
+# ----------------- wizontech 추가 ---------------------
+# -----------------------------------------------------
+
+
+    def ping(self):
+        return self.DBClient.ping()
+
+    def get_DBList(self):
+       
+        offset_flag = 0
+        bucket_list = []
+        buckets_api = self.DBClient.buckets_api()
+        buckets = buckets_api.find_buckets(
+            limit=100, offset=offset_flag).buckets  # bucket list 보여주기 최대 100까지만 가능
+        bucket_list.extend(bucket.name for bucket in buckets)
+        while len(buckets) == 100:
+            offset_flag += 100
+            buckets = buckets_api.find_buckets(
+                limit=100, offset=offset_flag).buckets
+            bucket_list.extend(bucket.name for bucket in buckets)
+
+        return bucket_list
+
+    def measurement_list(self, bk_name):
+    
+        query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
+        ms_list = []
+
+        try:
+            query_result = self.DBClient.query_api().query_data_frame(query=query)
+            ms_list = list(query_result["_value"])
+        except Exception as e:
+            print(e)
+
+        return ms_list
+
+    def get_first_time(self, bk_name, ms_name):
+   
+        query = f'''from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> group(columns: ["_field"])
+        |> first()
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        first_time = query_result["_time"][0]
+
+        return first_time
+
+    def get_last_time(self, bk_name, ms_name):
+    
+        query = f'''
+        from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> group(columns: ["_field"])
+        |> last()
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        last_time = query_result["_time"][0]  # .strftime('%Y-%m-%dT%H:%M:%S')
+
+        return last_time
+
+    def get_data_count(self, bk_name, ms_name, tag_key=None, tag_value=None):
+        
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: 0, stop: now()) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                '''
+                data_frame = self.DBClient.query_api().query_data_frame(query)
+                data_count = len(data_frame)
+        else:
+            query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: 0, stop: now()) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> group(columns: ["_field"])
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> count()
+            '''
+            data_frame = self.DBClient.query_api().query_data_frame(query)
+            data_count = int(data_frame["_value"][0])
+
+        return data_count
+
+    def create_database(self, bk_name):
+       
+        buckets_api = self.DBClient.buckets_api()
+
+        if buckets_api.find_bucket_by_name(bucket_name=bk_name) == None:
+            buckets_api.create_bucket(bucket_name=bk_name)
+
+    def write_db_with_tags(self, df_data, bk_name, ms_name, tags_array, fields_array, batch_size=5000):
+     
+        with self.DBClient.write_api(write_options=WriteOptions(batch_size=batch_size)) as write_client:
+            write_client.write(bucket=bk_name, record=df_data,
+                               data_frame_measurement_name=ms_name, data_frame_tag_columns=tags_array)
+
+    def get_fieldList(self, bk_name, ms_name):
+
+        column_df = self.get_dataend_by_num(1, bk_name, ms_name)
+
+        field_list = []
+        dtype_series = column_df.dtypes
+
+        tag_list = self.get_tagList(bk_name, ms_name)
+
+        for dtype_index, dtype_column in enumerate(dtype_series.index):
+            dtype_dict = {}
+            dtype_type = str(dtype_series.values[dtype_index])
+
+            if dtype_type == 'object':
+                dtype_type = 'string'
+            elif dtype_type == 'float64':
+                dtype_type = 'float'
+
+            if dtype_column not in tag_list:
+                dtype_dict['fieldKey'] = dtype_column
+                dtype_dict['fieldType'] = dtype_type
+                field_list.append(dtype_dict)
+
+        return field_list
 
 
 

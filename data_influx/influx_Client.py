@@ -487,7 +487,77 @@ class influxClient():
     
 
 
+# -----------------------------------------------------
+# ----------------- wizontech 추가 ---------------------
+# -----------------------------------------------------
 
+
+    def ping(self):
+
+        try:
+            self.DBClient.ping()
+        except Exception as e:
+            print('influxdb not available')
+            return False
+
+        return True
+
+    def create_database(self, database_name):
+        self.DBClient.create_database(database_name)
+
+    def write_db_with_tags(self, df_data, database_name, measurement_name, tags_array, fields_array, batch_size=10000):
+
+        frameClient = DataFrameClient(self.influx_setting['host'], self.influx_setting['port'],
+                                      self.influx_setting['user'], self.influx_setting['password'], self.db_name)
+
+        frameClient.write_points(
+            df_data,
+            database=database_name,
+            measurement=measurement_name,
+            tag_columns=tags_array,
+            field_columns=fields_array,
+            batch_size=batch_size,
+            protocol='line'
+        )
+
+    def get_data_count(self, db_name, ms_name):
+
+        self.switch_MS(db_name, ms_name)
+        result_set = self.DBClient.query('select count(*) from "' + ms_name + '"')
+        point_data = list(result_set.get_points())[0]
+        count_key_list = []
+        data_count = 0
+
+        for count_key in point_data.keys():
+            if count_key.startswith("count_") : count_key_list.append(count_key)
+            
+        for count_column in count_key_list:
+            if data_count < point_data[count_column]:
+                data_count = point_data[count_column]
+
+        return data_count
+
+    def get_data_limit_by_time(self, start_time, end_time, limit_value, db_name, ms_name):
+
+        self.switch_MS(db_name, ms_name)
+
+        query_string = 'select * from "' + ms_name + '" where time >= \'' + \
+            start_time + '\' and time <= \'' + \
+            end_time + '\' limit ' + str(limit_value)
+
+        result_set = self.DBClient.query(query_string)
+        results = pd.DataFrame(result_set.get_points(measurement=ms_name))
+
+        return self.cleanup_df(results)
+
+    def get_fieldList(self, db_name, ms_name):
+        
+        self.switch_MS(db_name, ms_name)
+        query_string = "SHOW FIELD KEYS"
+        fieldList = list(self.DBClient.query(
+            query_string).get_points(measurement=ms_name))
+
+        return fieldList
 
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):

@@ -30,6 +30,8 @@ class influxClient():
         self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
 
 
+
+
     def get_DBList(self):
         """
         get all bucket(Database) list
@@ -624,6 +626,15 @@ class influxClient():
 
         return tag_value
 
+    def close_db(self) :
+        self.DBClient.close()
+
+    def delete_measurement(self, bk_name) :
+        start = 0
+        import datetime
+        stop = datetime.datetime.now()
+        delete_api = self.DBClient.delete_api()
+        delete_api.delete(start = start, stop = stop, predicate = '', bucket = bk_name, org = self.influx_setting["org"])
 
 
 

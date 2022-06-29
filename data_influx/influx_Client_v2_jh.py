@@ -509,7 +509,7 @@ if __name__ == "__main__":
     print(df)
 
 
-    def get_fieldList(self, bk_name, ms_name):
+    def get_fieldList(self, bk_name, ms_name, onlyFieldName= False):
         """
         get all field list of specific measurements
         """

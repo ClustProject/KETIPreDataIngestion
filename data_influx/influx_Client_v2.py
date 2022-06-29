@@ -1,4 +1,4 @@
-from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
@@ -679,6 +679,23 @@ f
             field_list = new_field_list
 
         return field_list
+
+
+
+    def create_database(self, bk_name):
+       
+        buckets_api = self.DBClient.buckets_api()
+
+        if buckets_api.find_bucket_by_name(bucket_name=bk_name) == None:
+            buckets_api.create_bucket(bucket_name=bk_name)
+
+    def write_db_with_tags(self, df_data, bk_name, ms_name, tags_array, fields_array, batch_size=5000):
+
+        with self.DBClient.write_api(write_options=WriteOptions(batch_size=batch_size)) as write_client:
+            write_client.write(bucket=bk_name, record=df_data,
+                               data_frame_measurement_name=ms_name, data_frame_tag_columns=tags_array)
+
+
 
 
     def ping(self):

@@ -31,7 +31,6 @@ class influxClient():
 
 
 
-
     def get_DBList(self):
         """
         get all bucket(Database) list
@@ -581,7 +580,9 @@ class influxClient():
         Write data to the influxdb
         """
         write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
-        self.create_bucket(bk_name)
+        if bk_name not in self.get_DBList:
+            self.create_bucket(bk_name)
+
         write_client.write(bucket=bk_name, record=data_frame,
                            data_frame_measurement_name=ms_name)
         print("========== write success ==========")
@@ -751,3 +752,6 @@ if __name__ == "__main__":
     # days = 7
     # tag_key = 'company'
     # tag_value = 'GS리테일'
+
+    aa = test.get_DBList()
+    print(aa)

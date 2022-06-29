@@ -20,7 +20,7 @@ class DataIngestionByInputType():
         DBClient = influx_Client.influxClient(ins.CLUSTDataServer)
         #db_list = DBClient.get_DBList() # 나중에 DB 이름 바꾸고 싶을때 여기 체크 가능
         #ms_list = DBClient.measurement_list(db_name) # MS 이름 바꾸고 싶을때 여기 체크 가능
-        #feature_list = DBClient.get_fieldList(db_name, ms_name)
+        #feature_list = DBClient.get_fieldList(db_name, ms_name, True)
 
         #full_data = DBClient.get_data(db_name, ms_name)
         # 우선 full data 가져오도록 해놨음 db 이름과 ms 이름은 list에서 적당한것 바꿔볼 수 있음

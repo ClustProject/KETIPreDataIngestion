@@ -240,7 +240,7 @@ class influxClient():
         :rtype: DataFrame
         """
         if isinstance(start_time, str):
-            if start_time not in 'T':
+            if 'T' not in start_time:
                 start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:
@@ -294,7 +294,7 @@ class influxClient():
 
         """
         if isinstance(end_time, str):
-            if end_time not in 'T':
+            if 'T' not in end_time:
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:
                 pass
@@ -493,7 +493,7 @@ class influxClient():
         :rtype: DataFrame
         """
         if isinstance(start_time, str):
-            if start_time not in 'T':
+            if 'T' not in start_time:
                 start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:

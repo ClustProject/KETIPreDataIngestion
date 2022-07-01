@@ -649,7 +649,7 @@ f
         return tag_value
 
 
-    def get_fieldList2(self, bk_name, ms_name, onlyFieldName= False):
+    def get_fieldList_type(self, bk_name, ms_name, onlyFieldName= False):
         column_df = self.get_dataend_by_num(1, bk_name, ms_name)
 
         field_list = []

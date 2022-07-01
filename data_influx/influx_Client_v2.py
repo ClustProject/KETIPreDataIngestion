@@ -43,8 +43,6 @@ class influxClient():
 
         bk_list = []
         bk_list.extend(bucket.name for bucket in buckets)
-        # for bucket in buckets:
-        #     bk_list.append(bucket.name)
 
         bk_list.remove('_monitoring')
         bk_list.remove('_tasks')
@@ -98,32 +96,32 @@ class influxClient():
 
         return ms_list
 
-    # def get_fieldList(self, bk_name, ms_name):
-    #     """
-    #     get all field list of specific measurements
+    def get_fieldList(self, bk_name, ms_name):
+        """
+        get all field list of specific measurements
 
-    #     :param db_name: bucket(database) 
-    #     :type db_name: string
-    #     :param ms_name: measurement 
-    #     :type ms_name: string
+        :param db_name: bucket(database) 
+        :type db_name: string
+        :param ms_name: measurement 
+        :type ms_name: string
 
-    #     :return: fieldList in measurement
-    #     :rtype: List
-    #     """
-    #     query = f'''
-    #     import "experimental/query"
+        :return: fieldList in measurement
+        :rtype: List
+        """
+        query = f'''
+        import "experimental/query"
 
-    #     query.fromRange(bucket: "{bk_name}", start:0)
-    #     |> query.filterMeasurement(
-    #         measurement: "{ms_name}")
-    #     |> keys()
-    #     |> distinct(column: "_field")
-    #     '''
+        query.fromRange(bucket: "{bk_name}", start:0)
+        |> query.filterMeasurement(
+            measurement: "{ms_name}")
+        |> keys()
+        |> distinct(column: "_field")
+        '''
         
-    #     query_result = self.DBClient.query_api().query_data_frame(query=query)
-    #     field_list = list(query_result["_field"])
-    #     field_list = list(set(field_list))
-    #     return field_list
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        field_list = list(query_result["_field"])
+        field_list = list(set(field_list))
+        return field_list
 
     def get_data(self, bk_name, ms_name, tag_key=None, tag_value=None):
         """
@@ -644,13 +642,14 @@ f
         |> distinct(column: "{tag_key}")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        query_result = query_result.drop_duplicates([tag_key])
+        # query_result = query_result.drop_duplicates([tag_key])
+        print(query_result[tag_key])
         tag_value = list(query_result[tag_key])
 
         return tag_value
 
 
-    def get_fieldList(self, bk_name, ms_name, onlyFieldName= False):
+    def get_fieldList2(self, bk_name, ms_name, onlyFieldName= False):
         column_df = self.get_dataend_by_num(1, bk_name, ms_name)
 
         field_list = []
@@ -729,6 +728,30 @@ f
 
 
 
+    # def get_DBList(self):
+
+    #     offset_flag = 0
+    #     bucket_list = []
+    #     buckets_api = self.DBClient.buckets_api()
+    #     buckets = buckets_api.find_buckets(
+    #         limit=100, offset=offset_flag).buckets  # bucket list 보여주기 최대 100까지만 가능
+    #     bucket_list.extend(bucket.name for bucket in buckets)
+    #     while len(buckets) == 100:
+    #         offset_flag += 100
+    #         buckets = buckets_api.find_buckets(
+    #             limit=100, offset=offset_flag).buckets
+    #         bucket_list.extend(bucket.name for bucket in buckets)
+
+    #     return bucket_list
+
+
+
+
+
+
+
+
+
 
 
 
@@ -740,8 +763,8 @@ if __name__ == "__main__":
     test = influxClient(ins.CLUSTDataServer2)
     # bk_name="air_indoor_경로당"
     # ms_name="ICL1L2000235"
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
+    # bk_name="bio_covid_infected_world"
+    # ms_name="england"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'
@@ -750,8 +773,5 @@ if __name__ == "__main__":
     end_time = '2021-05-30 00:00:00'
     # number = 7
     # days = 7
-    # tag_key = 'company'
+    tag_key = 'company'
     # tag_value = 'GS리테일'
-
-    aa = test.get_DBList()
-    print(aa)

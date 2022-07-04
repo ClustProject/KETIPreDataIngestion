@@ -44,8 +44,11 @@ class influxClient():
         bk_list = []
         bk_list.extend(bucket.name for bucket in buckets)
 
-        bk_list.remove('_monitoring')
-        bk_list.remove('_tasks')
+        if '_monitoring' in bk_list:
+            bk_list.remove('_monitoring')
+
+        if '_tasks' in bk_list:
+            bk_list.remove('_tasks')
 
         return bk_list
 
@@ -578,7 +581,7 @@ class influxClient():
         Write data to the influxdb
         """
         write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
-        if bk_name not in self.get_DBList:
+        if bk_name not in self.get_DBList():
             self.create_bucket(bk_name)
 
         write_client.write(bucket=bk_name, record=data_frame,
@@ -775,3 +778,5 @@ if __name__ == "__main__":
     # days = 7
     tag_key = 'company'
     # tag_value = 'GS리테일'
+
+ 

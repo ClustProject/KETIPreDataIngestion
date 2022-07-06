@@ -99,7 +99,7 @@ class influxClient():
 
         return ms_list
 
-    def get_fieldList(self, bk_name, ms_name):
+    def get_fieldList(self, bk_name, ms_name, onlyFieldName= False):
         """
         get all field list of specific measurements
 

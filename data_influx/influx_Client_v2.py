@@ -27,7 +27,7 @@ class influxClient():
 
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
-        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"])
+        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"], timeout=30_000)
 
 
 
@@ -766,8 +766,8 @@ if __name__ == "__main__":
     test = influxClient(ins.CLUSTDataServer2)
     # bk_name="air_indoor_경로당"
     # ms_name="ICL1L2000235"
-    # bk_name="bio_covid_infected_world"
-    # ms_name="england"
+    bk_name="bio_covid_infected_world"
+    ms_name="england"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'
@@ -779,4 +779,15 @@ if __name__ == "__main__":
     tag_key = 'company'
     # tag_value = 'GS리테일'
 
- 
+    # aa = test.get_DBList()
+    # print(aa)
+
+    aa = test.get_DBList()
+    print(len(aa))
+    print(aa)
+
+
+
+
+
+

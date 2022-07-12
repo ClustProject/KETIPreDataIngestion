@@ -4,6 +4,7 @@ import sys
 import os
 import pandas as pd
 from datetime import datetime
+from rx import start
 
 from sqlalchemy import column
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
@@ -248,6 +249,9 @@ class influxClient():
         """
         if isinstance(start_time, str):
             if 'T' not in start_time:
+                if len(start_time) < 12:
+                    start_time = start_time + " 00:00:00"
+                    end_time = end_time + " 23:59:59"
                 start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:
@@ -302,6 +306,8 @@ class influxClient():
         """
         if isinstance(end_time, str):
             if 'T' not in end_time:
+                if len(end_time) < 12:
+                    end_time = end_time + " 23:59:59"
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:
                 pass
@@ -501,6 +507,9 @@ class influxClient():
         """
         if isinstance(start_time, str):
             if 'T' not in start_time:
+                if len(start_time) < 12:
+                    start_time = start_time + " 00:00:00"
+                    end_time = end_time + " 23:59:59"
                 start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
                 end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
             else:
@@ -772,8 +781,10 @@ if __name__ == "__main__":
     # ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'
     # ms_name="argentina"
-    start_time = '2021-01-01 00:00:00'
-    end_time = '2021-05-30 00:00:00'
+    # start_time = '2021-01-01 00:00:00'
+    # end_time = '2021-05-30 23:59:59'
+    start_time = '2021-01-01'
+    end_time = '2021-05-30'
     # number = 7
     # days = 7
     tag_key = 'company'
@@ -782,8 +793,9 @@ if __name__ == "__main__":
     # aa = test.get_DBList()
     # print(aa)
 
-    aa = test.get_DBList()
-    print(len(aa))
+    print(len(start_time))
+
+    aa = test.get_data_by_time(start_time, end_time, bk_name, ms_name)
     print(aa)
 
 

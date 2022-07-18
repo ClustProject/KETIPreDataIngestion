@@ -1,3 +1,4 @@
+from doctest import DocFileCase
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
@@ -734,8 +735,34 @@ f
         """
         write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
      
+        
         write_client.write(bucket=bk_name, record=data_frame, data_frame_measurement_name=ms_name)
-        print("========== write success ==========")
+        print("========== write success :: ",ms_name," ==========")
+
+
+    def write_db_highCapacity(self, bk_name, ms_name, df) : 
+
+        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)    
+        
+        dataSize = len(df.index)
+
+        if dataSize > 25000 : 
+            chucksize = 25000
+            import math
+            share = math.ceil(dataSize / chucksize)
+            x = 0
+            y = chucksize                
+
+            for idx in range(share) :
+                chunkDF = df[x:y]
+                write_client.write(bucket=bk_name, record=chunkDF, data_frame_measurement_name=ms_name)
+                x = y
+                y = x + chucksize
+                print("dataSize :: ", dataSize, ", x ::", x, ", y ::" , y, ", share :: ", share)
+
+        else : 
+            write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
+
         
 
 

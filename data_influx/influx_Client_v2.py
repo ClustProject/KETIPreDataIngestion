@@ -609,6 +609,19 @@ class influxClient():
 
 
 
+    def drop_measurement(self, bk_name, ms_name):
+        """
+        Drop Measurement
+        """
+        start_time = '1970-01-01T00:00:00Z'
+        end_time = datetime.now().strftime(UTC_Style)
+        delete_api = self.DBClient.delete_api()
+        delete_api.delete(start_time, end_time, f'_measurement={ms_name}', bucket=bk_name, org = self.influx_setting["org"])
+        print("========== drop measurement ==========")
+
+
+
+
 
 
 # ---------------------------------- new function ------------------------------
@@ -802,30 +815,20 @@ if __name__ == "__main__":
     test = influxClient(ins.CLUSTDataServer2)
     # bk_name="air_indoor_경로당"
     # ms_name="ICL1L2000235"
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
+    # bk_name="bio_covid_infected_world"
+    # ms_name="england"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'
     # ms_name="argentina"
     # start_time = '2021-01-01 00:00:00'
     # end_time = '2021-05-30 23:59:59'
-    start_time = '2021-01-01'
-    end_time = '2021-05-30'
+    # start_time = '2021-01-01'
+    # end_time = '2021-05-30'
     # number = 7
     # days = 7
-    tag_key = 'company'
+    # tag_key = 'company'
     # tag_value = 'GS리테일'
-
-    # aa = test.get_DBList()
-    # print(aa)
-
-    print(len(start_time))
-
-    aa = test.get_data_by_time(start_time, end_time, bk_name, ms_name)
-    print(aa)
-
-
 
 
 

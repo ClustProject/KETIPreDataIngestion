@@ -606,6 +606,7 @@ class influxClient():
         buckets_api = self.DBClient.buckets_api()
         buckets_api.create_bucket(bucket_name=bk_name)
         print("========== create bucket ==========")
+    
 
 
 
@@ -801,15 +802,6 @@ f
 
 
 
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTDataServer2)
@@ -829,7 +821,3 @@ if __name__ == "__main__":
     # days = 7
     # tag_key = 'company'
     # tag_value = 'GS리테일'
-
-
-
-

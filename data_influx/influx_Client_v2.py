@@ -27,7 +27,7 @@ class influxClient():
 
     def __init__(self, influx_setting):
         self.influx_setting = influx_setting
-        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"], timeout=30_000)
+        self.DBClient = InfluxDBClient(url=self.influx_setting["url"], token=self.influx_setting["token"], org=self.influx_setting["org"], timeout=30000_000)
 
 
 
@@ -588,7 +588,7 @@ class influxClient():
         """
         Write data to the influxdb
         """
-        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
+        write_client = self.DBClient.write_api(write_options=WriteOptions(batch_size=10000))
         if bk_name not in self.get_DBList():
             self.create_bucket(bk_name)
 
@@ -625,17 +625,27 @@ class influxClient():
         """
         write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
         if bk_name not in self.get_DBList():
+            print("========== Start Get DBList ==========")
             self.create_bucket(bk_name)
 
+        print("========== Start Data Split ==========")
+        
         df_count = len(data_frame.index)
+        print("========== df count shottttt:",df_count)
 
         import math
-        df_range = math.ceil(df_count/30000)
+        df_range = math.ceil(df_count/10000)
+        print("========== df_range shottttt:",df_range)
 
         for i in range(0, df_range):
-            new_data_frame = data_frame.iloc[30000*i:30000*(i+1)]
+            print("========== Get New Data Frame ==========")
+            new_data_frame = data_frame.iloc[10000*i:10000*(i+1)-1]
+            
+            print("========== Start Write DB ==========")
             write_client.write(bucket=bk_name, record=new_data_frame, data_frame_measurement_name=ms_name)
-            print(new_data_frame)
+            print("success")
+            import time
+            time.sleep(2)
 
         self.close_db()
         print("========== write success ==========")

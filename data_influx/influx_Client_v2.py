@@ -5,9 +5,7 @@ import sys
 import os
 import pandas as pd
 from datetime import datetime
-from rx import start
 
-from sqlalchemy import column
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
 UTC_Style = '%Y-%m-%dT%H:%M:%SZ'
@@ -594,8 +592,7 @@ class influxClient():
         if bk_name not in self.get_DBList():
             self.create_bucket(bk_name)
 
-        write_client.write(bucket=bk_name, record=data_frame,
-                           data_frame_measurement_name=ms_name)
+        write_client.write(bucket=bk_name, record=data_frame,data_frame_measurement_name=ms_name)
         print("========== write success ==========")
         
 
@@ -619,6 +616,30 @@ class influxClient():
         delete_api = self.DBClient.delete_api()
         delete_api.delete(start_time, end_time, f'_measurement={ms_name}', bucket=bk_name, org = self.influx_setting["org"])
         print("========== drop measurement ==========")
+
+
+
+    def write_db_large(self, bk_name, ms_name, data_frame):
+        """
+        Write large data to the influxdb
+        """
+        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
+        if bk_name not in self.get_DBList():
+            self.create_bucket(bk_name)
+
+        df_count = len(data_frame.index)
+
+        import math
+        df_range = math.ceil(df_count/30000)
+
+        for i in range(0, df_range):
+            new_data_frame = data_frame.iloc[30000*i:30000*(i+1)]
+            write_client.write(bucket=bk_name, record=new_data_frame, data_frame_measurement_name=ms_name)
+            print(new_data_frame)
+
+        self.close_db()
+        print("========== write success ==========")
+
 
 
 
@@ -781,6 +802,13 @@ f
 
 
 
+
+
+
+
+
+
+
     # def get_DBList(self):
 
     #     offset_flag = 0
@@ -802,13 +830,16 @@ f
 
 
 
+
+
+
 if __name__ == "__main__":
     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
     test = influxClient(ins.CLUSTDataServer2)
     # bk_name="air_indoor_경로당"
     # ms_name="ICL1L2000235"
-    # bk_name="bio_covid_infected_world"
-    # ms_name="england"
+    bk_name="bio_covid_infected_world"
+    ms_name="england"
     # bk_name = "finance_korean_stock"
     # ms_name = "stock"
     # bk_name ='bio_covid_vaccinations'

@@ -594,6 +594,9 @@ class influxClient():
 
         write_client.write(bucket=bk_name, record=data_frame,data_frame_measurement_name=ms_name)
         print("========== write success ==========")
+        import time
+        time.sleep(2)
+
         
 
     def create_bucket(self, bk_name):  # write_db 수행 시, bucket 생성 필요

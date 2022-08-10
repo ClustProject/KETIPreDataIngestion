@@ -53,3 +53,18 @@ def get_MeasurementDataSetOnlyNumeric(db_client, intDataInfo):
             MSdataSet[i].index.name ='datetime'
 
         return MSdataSet
+
+
+
+def saveDataToInfluxDB(db_client, data):
+    bk_name =''
+    ms_name =''
+    data_frame = data
+
+
+    db_client.write_db(bk_name, ms_name, data_frame)
+    db_client.close_db()
+
+
+
+

@@ -44,11 +44,7 @@ class influxClient():
         bk_list = []
         bk_list.extend(bucket.name for bucket in buckets)
 
-        if '_monitoring' in bk_list:
-            bk_list.remove('_monitoring')
-
-        if '_tasks' in bk_list:
-            bk_list.remove('_tasks')
+        bk_list = [bk for bk in bk_list if bk not in ['_monitoring', '_tasks', 'telegraf']]
 
         return bk_list
 
@@ -703,15 +699,23 @@ f
         |> distinct(column: "{tag_key}")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        # query_result = query_result.drop_duplicates([tag_key])
-        print(query_result[tag_key])
+        query_result = query_result.drop_duplicates([tag_key])
         tag_value = list(query_result[tag_key])
 
         return tag_value
 
 
     def get_fieldList_type(self, bk_name, ms_name, onlyFieldName= False):
-        column_df = self.get_dataend_by_num(1, bk_name, ms_name)
+        query = f'''from(bucket: "{bk_name}") 
+        |> range(start: 0, stop: now()) 
+        |> filter(fn: (r) => r._measurement == "{ms_name}")
+        |> group(columns: ["_field"])
+        |> first()
+        |> drop(columns: ["_start", "_stop", "_measurement"])
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        '''
+        query_result = self.DBClient.query_api().query_data_frame(query=query)
+        column_df = self.cleanup_df(query_result)
 
         field_list = []
         dtype_series = column_df.dtypes
@@ -724,7 +728,7 @@ f
 
             if dtype_type == 'object':
                 dtype_type = 'string'
-            elif dtype_type == 'float64':
+            elif dtype_type == 'float64' or dtype_type == 'int64':
                 dtype_type = 'float'
 
             if dtype_column not in tag_list:

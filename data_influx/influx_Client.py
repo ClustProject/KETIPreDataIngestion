@@ -488,8 +488,6 @@ class influxClient():
     
 
 
-
-
 # MSdataSet ={}
 #         for i, dbinfo in enumerate(intDataInfo['db_info']):
 #             print(i)

@@ -732,7 +732,7 @@ f
 
             if dtype_type == 'object':
                 dtype_type = 'string'
-            elif dtype_type == 'float64':
+            elif dtype_type == 'float64' or dtype_type == 'int64':
                 dtype_type = 'float'
 
             if dtype_column not in tag_list:

@@ -44,11 +44,7 @@ class influxClient():
         bk_list = []
         bk_list.extend(bucket.name for bucket in buckets)
 
-        if '_monitoring' in bk_list:
-            bk_list.remove('_monitoring')
-
-        if '_tasks' in bk_list:
-            bk_list.remove('_tasks')
+        bk_list = [bk for bk in bk_list if bk not in ['_monitoring', '_tasks', 'telegraf']]
 
         return bk_list
 

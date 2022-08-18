@@ -358,18 +358,18 @@ class influxClient():
                 |> range(start: 0, stop: now()) 
                 |> filter(fn: (r) => r._measurement == "{ms_name}")
                 |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> limit(n:{number})
                 |> drop(columns: ["_start", "_stop", "_measurement"])
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                |> limit(n:{number})
                 '''
         else:
             query = f'''
             from(bucket: "{bk_name}") 
             |> range(start: 0, stop: now()) 
             |> filter(fn: (r) => r._measurement == "{ms_name}")
-            |> drop(columns: ["_start", "_stop", "_measurement"])
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> limit(n:{number})
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")            
             '''
 
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
@@ -400,9 +400,9 @@ class influxClient():
                 |> range(start: 0, stop: now()) 
                 |> filter(fn: (r) => r._measurement == "{ms_name}")
                 |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> tail(n:{number})
                 |> drop(columns: ["_start", "_stop", "_measurement"])
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                |> tail(n:{number})
                 '''
 
         else:
@@ -410,9 +410,9 @@ class influxClient():
             from(bucket: "{bk_name}") 
             |> range(start: 0, stop: now()) 
             |> filter(fn: (r) => r._measurement == "{ms_name}")
-            |> drop(columns: ["_start", "_stop", "_measurement"])
-            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
             |> tail(n:{number})
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")   
             '''
 
         data_frame = self.DBClient.query_api().query_data_frame(query=query)
@@ -520,9 +520,9 @@ class influxClient():
                 |> range(start: {start_time}, stop: {end_time}) 
                 |> filter(fn: (r) => r._measurement == "{ms_name}")
                 |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> limit(n:{number})
                 |> drop(columns: ["_start", "_stop", "_measurement"])
                 |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-                |> limit(n:{number})
                 '''
 
         else:
@@ -530,9 +530,9 @@ class influxClient():
             from(bucket: "{bk_name}") 
             |> range(start: {start_time}, stop: {end_time}) 
             |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> limit(n:{number})
             |> drop(columns: ["_start", "_stop", "_measurement"])
             |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-            |> limit(n:{number})
             '''
         data_frame = self.DBClient.query_api().query_data_frame(query)
         data_frame = self.cleanup_df(data_frame)
@@ -662,9 +662,9 @@ class influxClient():
             from(bucket: "{bk_name}") 
             |> range(start: 0, stop: now()) 
             |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> limit(n:1)
             |> group(columns: ["_field"])
             |> drop(columns: ["_start", "_stop", "_measurement","_field","_value","_time"])
-            |> limit(n:1)
             '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
         tag_list = list(query_result.columns[2:])

@@ -185,7 +185,8 @@ class influxClient():
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        first_time = query_result["_time"][0]
+        query_first_time = sorted(query_result["_time"])
+        first_time = query_first_time[0]
 
         return first_time
 
@@ -206,13 +207,14 @@ class influxClient():
         from(bucket: "{bk_name}") 
         |> range(start: 0, stop: now()) 
         |> filter(fn: (r) => r._measurement == "{ms_name}")
-        |> group(columns: ["_field"])
         |> last()
         |> drop(columns: ["_start", "_stop", "_measurement"])
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         '''
+
         query_result = self.DBClient.query_api().query_data_frame(query=query)
-        last_time = query_result["_time"][0]
+        query_last_time = sorted(query_result["_time"],reverse=True)
+        last_time = query_last_time[0]
 
         return last_time
 
@@ -455,6 +457,7 @@ class influxClient():
             pass
         return df
 
+
     def get_freq(self, bk_name, ms_name, tag_key=None, tag_value=None): 
         """
         :param db_name: bucket(database)  
@@ -473,7 +476,6 @@ class influxClient():
         from KETIPrePartialDataPreprocessing.data_refine.frequency import RefineFrequency
         result = str(RefineFrequency().get_frequencyWith3DataPoints(data))
         return result
-
 
 
     def get_data_limit_by_time(self, start_time, end_time, number, bk_name, ms_name, tag_key=None, tag_value=None):
@@ -580,6 +582,79 @@ class influxClient():
         return data_count
 
 
+    def get_data_by_time_count(self, start_time, end_time, bk_name, ms_name, tag_key=None, tag_value=None):
+        """
+        Get data of the specific measurement based on :guilabel:`start-end duration`
+        *get_datafront_by_duration(self, start_time, end_time)*
+
+        :param start_time: start time
+        :type start_time: pandas._libs.tslibs.timestamps.Timestamp or string
+
+        :param end_time: end time
+        :type end_time: pandas._libs.tslibs.timestamps.Timestamp or string
+
+        :param db_name: database name
+        :type db_name: string
+
+        :param ms_name: measurement name
+        :type ms_name: string
+
+        :param tag_key: tagkey (option)
+        :type ms_name: string
+
+        :param tag_value: tag_value (option)
+        :type ms_name: string
+
+        :return: df, time duration
+        :rtype: DataFrame
+        """
+        if isinstance(start_time, str):
+            if 'T' not in start_time:
+                if len(start_time) < 12:
+                    start_time = start_time + " 00:00:00"
+                    end_time = end_time + " 23:59:59"
+                start_time = datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+                end_time = datetime.strptime(end_time,'%Y-%m-%d %H:%M:%S').strftime(UTC_Style)
+            else:
+                pass
+        else: #Not String:
+            start_time = start_time.strftime(UTC_Style)
+            end_time = end_time.strftime(UTC_Style)
+
+        if tag_key:
+            if tag_value:
+                query = f'''
+                from(bucket: "{bk_name}") 
+                |> range(start: {start_time}, stop: {end_time}) 
+                |> filter(fn: (r) => r._measurement == "{ms_name}")
+                |> filter(fn: (r) => r.{tag_key} == "{tag_value}")
+                |> drop(columns: ["_start", "_stop", "_measurement"])
+                |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+                '''
+        else:
+            query = f'''
+            from(bucket: "{bk_name}") 
+            |> range(start: {start_time}, stop: {end_time}) 
+            |> filter(fn: (r) => r._measurement == "{ms_name}")
+            |> group(columns: ["_field"])
+            |> drop(columns: ["_start", "_stop", "_measurement"])
+            |> count()
+            '''
+        data_frame = self.DBClient.query_api().query_data_frame(query)
+        data_count = int(data_frame["_value"][0])
+
+        return data_count
+
+
+    def create_bucket(self, bk_name):  # write_db 수행 시, bucket 생성 필요
+        """
+        Create bucket to the influxdb
+        """
+        buckets_api = self.DBClient.buckets_api()
+        buckets_api.create_bucket(bucket_name=bk_name)
+        print("========== create bucket ==========")
+
+
     def write_db(self, bk_name, ms_name, data_frame):
         """
         Write data to the influxdb
@@ -592,19 +667,7 @@ class influxClient():
         print("========== write success ==========")
         import time
         time.sleep(2)
-
-        
-
-    def create_bucket(self, bk_name):  # write_db 수행 시, bucket 생성 필요
-        """
-        Create bucket to the influxdb
-        """
-        buckets_api = self.DBClient.buckets_api()
-        buckets_api.create_bucket(bucket_name=bk_name)
-        print("========== create bucket ==========")
     
-
-
 
     def drop_measurement(self, bk_name, ms_name):
         """
@@ -618,44 +681,11 @@ class influxClient():
 
 
 
-    def write_db_large(self, bk_name, ms_name, data_frame):
-        """
-        Write large data to the influxdb
-        """
-        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
-        if bk_name not in self.get_DBList():
-            print("========== Start Get DBList ==========")
-            self.create_bucket(bk_name)
-
-        print("========== Start Data Split ==========")
-        
-        df_count = len(data_frame.index)
-        print("========== df count shottttt:",df_count)
-
-        import math
-        df_range = math.ceil(df_count/10000)
-        print("========== df_range shottttt:",df_range)
-
-        for i in range(0, df_range):
-            print("========== Get New Data Frame ==========")
-            new_data_frame = data_frame.iloc[10000*i:10000*(i+1)-1]
-            
-            print("========== Start Write DB ==========")
-            write_client.write(bucket=bk_name, record=new_data_frame, data_frame_measurement_name=ms_name)
-            print("success")
-            import time
-            time.sleep(2)
-
-        self.close_db()
-        print("========== write success ==========")
 
 
 
 
-
-
-
-# ---------------------------------- new function ------------------------------
+# --------------------------------------------- new function from wiz ---------------------------------------------
     def get_tagList(self, bk_name, ms_name):
 
         query = f'''
@@ -746,7 +776,6 @@ f
         return field_list
 
 
-
     def create_database(self, bk_name):
        
         buckets_api = self.DBClient.buckets_api()
@@ -754,14 +783,12 @@ f
         if buckets_api.find_bucket_by_name(bucket_name=bk_name) == None:
             buckets_api.create_bucket(bucket_name=bk_name)
 
+
     def write_db_with_tags(self, df_data, bk_name, ms_name, tags_array, fields_array, batch_size=5000):
 
         with self.DBClient.write_api(write_options=WriteOptions(batch_size=batch_size)) as write_client:
             write_client.write(bucket=bk_name, record=df_data,
                                data_frame_measurement_name=ms_name, data_frame_tag_columns=tags_array)
-
-
-
 
     def ping(self):
         return self.DBClient.ping()
@@ -769,27 +796,54 @@ f
     def close_db(self) :
         self.DBClient.close()
 
+    # def get_DBList(self):
+
+    #     offset_flag = 0
+    #     bucket_list = []
+    #     buckets_api = self.DBClient.buckets_api()
+    #     buckets = buckets_api.find_buckets(
+    #         limit=100, offset=offset_flag).buckets  # bucket list 보여주기 최대 100까지만 가능
+    #     bucket_list.extend(bucket.name for bucket in buckets)
+    #     while len(buckets) == 100:
+    #         offset_flag += 100
+    #         buckets = buckets_api.find_buckets(
+    #             limit=100, offset=offset_flag).buckets
+    #         bucket_list.extend(bucket.name for bucket in buckets)
+
+    #     return bucket_list
 
 
 
 
-    #아직 개발 진행중
-    def delete_measurement(self, bk_name) :
-        start = 0
-        import datetime
-        stop = datetime.datetime.now()
-        delete_api = self.DBClient.delete_api()
-        delete_api.delete(start = start, stop = stop, predicate = '', bucket = bk_name, org = self.influx_setting["org"])
 
-    def write_db_2(self, bk_name, ms_name, data_frame):
+
+    def write_db_large(self, bk_name, ms_name, data_frame):
         """
-        Write data to the influxdb
+        Write large data to the influxdb
         """
         write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)
-     
+        if bk_name not in self.get_DBList():
+            self.create_bucket(bk_name)
         
-        write_client.write(bucket=bk_name, record=data_frame, data_frame_measurement_name=ms_name)
-        print("========== write success :: ",ms_name," ==========")
+        df_count = len(data_frame.index)
+
+        import math
+        df_range = math.ceil(df_count/10000)
+
+        for i in range(0, df_range):
+            new_data_frame = data_frame.iloc[10000*i:10000*(i+1)-1]
+            
+            write_client.write(bucket=bk_name, record=new_data_frame, data_frame_measurement_name=ms_name)
+            import time
+            time.sleep(2)
+
+        self.close_db()
+        print("========== write success ==========")
+
+
+
+
+
 
 
     def write_db_highCapacity(self, bk_name, ms_name, df) : 
@@ -814,58 +868,3 @@ f
 
         else : 
             write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
-
-        
-
-
-
-
-
-
-
-
-
-
-    # def get_DBList(self):
-
-    #     offset_flag = 0
-    #     bucket_list = []
-    #     buckets_api = self.DBClient.buckets_api()
-    #     buckets = buckets_api.find_buckets(
-    #         limit=100, offset=offset_flag).buckets  # bucket list 보여주기 최대 100까지만 가능
-    #     bucket_list.extend(bucket.name for bucket in buckets)
-    #     while len(buckets) == 100:
-    #         offset_flag += 100
-    #         buckets = buckets_api.find_buckets(
-    #             limit=100, offset=offset_flag).buckets
-    #         bucket_list.extend(bucket.name for bucket in buckets)
-
-    #     return bucket_list
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTDataServer2)
-    # bk_name="air_indoor_경로당"
-    # ms_name="ICL1L2000235"
-    bk_name="bio_covid_infected_world"
-    ms_name="england"
-    # bk_name = "finance_korean_stock"
-    # ms_name = "stock"
-    # bk_name ='bio_covid_vaccinations'
-    # ms_name="argentina"
-    # start_time = '2021-01-01 00:00:00'
-    # end_time = '2021-05-30 23:59:59'
-    # start_time = '2021-01-01'
-    # end_time = '2021-05-30'
-    # number = 7
-    # days = 7
-    # tag_key = 'company'
-    # tag_value = 'GS리테일'

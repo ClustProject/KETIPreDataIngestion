@@ -9,17 +9,18 @@ def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, freq
     from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': frequency}}
     output_data = DataPreprocessing().get_refinedData(query_data, refine_param)
+    cycleData = CycleData()
     # cycle 주기에 따라 적절한 함수 적용
     if feature_cycle == 'Hour':
-        data = CycleData().getHourCycleSet(output_data, feature_cycle_times, False)
+        data = cycleData.getHourCycleSet(output_data, feature_cycle_times, False)
     elif feature_cycle == 'Day':
-        data = CycleData().getDayCycleSet(output_data, feature_cycle_times, False)
+        data = cycleData.getDayCycleSet(output_data, feature_cycle_times, False)
     elif feature_cycle == 'Week':
-        data = CycleData().getWeekCycleSet(output_data, feature_cycle_times, False)
+        data = cycleData.getWeekCycleSet(output_data, feature_cycle_times, False)
     elif feature_cycle == 'Month':
-        data = CycleData().getMonthCycleSet(output_data, feature_cycle_times, False)
+        data = cycleData.getMonthCycleSet(output_data, feature_cycle_times, False)
     elif feature_cycle == 'Year':
-        data = CycleData().getYearCycleSet(output_data, feature_cycle_times, False)
+        data = cycleData.getYearCycleSet(output_data, feature_cycle_times, False)
 
     return data
 

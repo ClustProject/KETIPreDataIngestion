@@ -1,10 +1,14 @@
 from doctest import DocFileCase
+import warnings
+from influxdb_client.client.warnings import MissingPivotFunction
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
 import os
 import pandas as pd
 from datetime import datetime
+
+warnings.simplefilter("ignore", MissingPivotFunction)
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
@@ -60,9 +64,8 @@ class influxClient():
         """
         query = f'import "influxdata/influxdb/schema" schema.measurements(bucket: "{bk_name}")'
         ms_list = []
-
         try:
-            query_result = self.DBClient.query_api().query_data_frame(query=query)
+            query_result = self.DBClient.query_api().query_data_frame(query)
             ms_list = list(query_result["_value"])
         except Exception as e:
             print(e)
@@ -868,3 +871,26 @@ f
 
         else : 
             write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
+
+
+
+if __name__ == "__main__":
+    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    test = influxClient(ins.CLUSTDataServer2)
+    db_name="air_indoor_아파트"
+    ms_name="ICW0W2000781"
+    # db_name="air_indoor_경로당"
+    # ms_name="ICL1L2000235"
+    # start_time = '2021-05-01T00:00:00Z'
+    # end_time = '2021-08-31T00:00:00Z'
+    # db_name = "finance_korean_stock"
+    # ms_name = "stock"
+    start_time = '2022-01-01T00:00:00Z'
+    end_time = '2022-02-28T00:00:00Z' 
+    number = 7
+    days = 7
+    tag_key = 'company'
+    tag_value = 'GS리테일'
+
+    aa = test.measurement_list(db_name)
+    print(aa)

@@ -251,6 +251,7 @@ class influxClient():
         :return: df, time duration
         :rtype: DataFrame
         """
+        print("Data Ingestion Start")
         if isinstance(start_time, str):
             pass
         else: #Not String:
@@ -269,7 +270,7 @@ class influxClient():
             df = pd.DataFrame(self.DBClient.query(query_string).get_points())
         
         df = self.cleanup_df(df)
-
+        print("Data Ingestion End")
         return df
 
 

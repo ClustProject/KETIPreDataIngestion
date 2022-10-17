@@ -1,6 +1,6 @@
 from doctest import DocFileCase
 import warnings
-from influxdb_client.client.warnings import MissingPivotFunction
+#from influxdb_client.client.warnings import MissingPivotFunction
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys
@@ -8,7 +8,7 @@ import os
 import pandas as pd
 from datetime import datetime
 
-warnings.simplefilter("ignore", MissingPivotFunction)
+#warnings.simplefilter("ignore", MissingPivotFunction)
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 

@@ -799,25 +799,6 @@ f
     def close_db(self) :
         self.DBClient.close()
 
-    # def get_DBList(self):
-
-    #     offset_flag = 0
-    #     bucket_list = []
-    #     buckets_api = self.DBClient.buckets_api()
-    #     buckets = buckets_api.find_buckets(
-    #         limit=100, offset=offset_flag).buckets  # bucket list 보여주기 최대 100까지만 가능
-    #     bucket_list.extend(bucket.name for bucket in buckets)
-    #     while len(buckets) == 100:
-    #         offset_flag += 100
-    #         buckets = buckets_api.find_buckets(
-    #             limit=100, offset=offset_flag).buckets
-    #         bucket_list.extend(bucket.name for bucket in buckets)
-
-    #     return bucket_list
-
-
-
-
 
 
     def write_db_large(self, bk_name, ms_name, data_frame):
@@ -845,52 +826,55 @@ f
 
 
 
+    # def write_db_highCapacity(self, bk_name, ms_name, df) : 
 
-
-
-
-    def write_db_highCapacity(self, bk_name, ms_name, df) : 
-
-        write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)    
+    #     write_client = self.DBClient.write_api(write_options=ASYNCHRONOUS)    
         
-        dataSize = len(df.index)
+    #     dataSize = len(df.index)
 
-        if dataSize > 25000 : 
-            chucksize = 25000
-            import math
-            share = math.ceil(dataSize / chucksize)
-            x = 0
-            y = chucksize                
+    #     if dataSize > 25000 : 
+    #         chucksize = 25000
+    #         import math
+    #         share = math.ceil(dataSize / chucksize)
+    #         x = 0
+    #         y = chucksize                
 
-            for idx in range(share) :
-                chunkDF = df[x:y]
-                write_client.write(bucket=bk_name, record=chunkDF, data_frame_measurement_name=ms_name)
-                x = y
-                y = x + chucksize
-                print("dataSize :: ", dataSize, ", x ::", x, ", y ::" , y, ", share :: ", share)
+    #         for idx in range(share) :
+    #             chunkDF = df[x:y]
+    #             write_client.write(bucket=bk_name, record=chunkDF, data_frame_measurement_name=ms_name)
+    #             x = y
+    #             y = x + chucksize
+    #             print("dataSize :: ", dataSize, ", x ::", x, ", y ::" , y, ", share :: ", share)
 
-        else : 
-            write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
+    #     else : 
+    #         write_client.write(bucket=bk_name, record=df, data_frame_measurement_name=ms_name)
 
 
 
-if __name__ == "__main__":
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-    test = influxClient(ins.CLUSTDataServer2)
-    db_name="air_indoor_아파트"
-    ms_name="ICW0W2000781"
+
+
+
+
+
+
+## -------------------------------------- Influx Test --------------------------------------
+# if __name__ == "__main__":
+#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     test = influxClient(ins.CLUSTDataServer2)
+#     db_name="air_indoor_아파트"
+#     ms_name="ICW0W2000781"
     # db_name="air_indoor_경로당"
     # ms_name="ICL1L2000235"
     # start_time = '2021-05-01T00:00:00Z'
     # end_time = '2021-08-31T00:00:00Z'
     # db_name = "finance_korean_stock"
     # ms_name = "stock"
-    start_time = '2022-01-01T00:00:00Z'
-    end_time = '2022-02-28T00:00:00Z' 
-    number = 7
-    days = 7
-    tag_key = 'company'
-    tag_value = 'GS리테일'
+    # start_time = '2022-01-01T00:00:00Z'
+    # end_time = '2022-02-28T00:00:00Z' 
+    # number = 7
+    # days = 7
+    # tag_key = 'company'
+    # tag_value = 'GS리테일'
 
-    aa = test.measurement_list(db_name)
-    print(aa)
+    # aa = test.measurement_list(db_name)
+    # print(aa)

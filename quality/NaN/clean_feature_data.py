@@ -203,7 +203,7 @@ class CleanFeatureData:
             #1. Preprocessing (Data Refining/Static Frequency/OutlierDetection)
             MDP = data_preprocessing.DataPreprocessing()
             refined_data = MDP.get_refinedData(data, self.refine_param)
-            from KETIPrePartialDataPreprocessing.error_detection.errorToNaN import errorToNaN 
+            from KETIPrePartialDataPreprocessing.errorDetection.errorToNaN import errorToNaN 
             datawithMoreCertainNaN = errorToNaN().getDataWithCertainNaN(refined_data, self.certainParam)
         
         return refined_data, datawithMoreCertainNaN

@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from KETIPreDataIngestion.dataByCondition.cycleData import CycleData
+from KETIPreDataIngestion.quality.cycleData import CycleData
 
 
 def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, frequency=None):

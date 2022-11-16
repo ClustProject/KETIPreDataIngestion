@@ -3,7 +3,7 @@ sys.path.append("../")
 sys.path.append("../..")
 import pandas as pd
 from KETIPrePartialDataPreprocessing.quality.NaN.import data_remove_byNaN
-from KETIPrePartialDataPreprocessing import data_preprocessing
+from KETIPrePartialDataPreprocessing import dataProcessing
 
 # 특정 datasetd에 대해 품질을 점검하고 각 피쳐별로 이상 수치를 넘는 피쳐 데이터는 제거하고 깨끗한 데이터를 전달
 # - multiple dataFrame:getMultipleCleanDataSetsByFeature
@@ -65,7 +65,7 @@ class CleanFeatureData:
                         
                         pass
                     else:
-                        imputedData = data_preprocessing.DataPreprocessing().get_imputedData(DataWithMoreNaN, self.imputation_param)
+                        imputedData = DataPreprocessing.DataPreprocessing().get_imputedData(DataWithMoreNaN, self.imputation_param)
                         self.FilteredImputedDataSet[ms_name] = imputedData     
                      
         return self.refinedDataSet, self.FilteredImputedDataSet
@@ -175,7 +175,7 @@ class CleanFeatureData:
                 if feature in NaNRemovedData.columns: # NaN의 limit을 넘은 컬럼 삭제 후, 컬럼이 남아있으면
                     NaNRemovedData_feature = NaNRemovedData[[feature]]
                     finalFlag[feature] = 1
-                    MDP = data_preprocessing.DataPreprocessing()
+                    MDP = DataPreprocessing.DataPreprocessing()
                     ImputedData[feature] = MDP.get_imputedData(NaNRemovedData_feature, self.imputation_param)
             else:
                 finalFlag[feature] = -1
@@ -201,7 +201,7 @@ class CleanFeatureData:
         
         if len(data)>0:
             #1. Preprocessing (Data Refining/Static Frequency/OutlierDetection)
-            MDP = data_preprocessing.DataPreprocessing()
+            MDP = DataPreprocessing.DataPreprocessing()
             refined_data = MDP.get_refinedData(data, self.refine_param)
             from KETIPrePartialDataPreprocessing.errorDetection.errorToNaN import errorToNaN 
             datawithMoreCertainNaN = errorToNaN().getDataWithCertainNaN(refined_data, self.certainParam)

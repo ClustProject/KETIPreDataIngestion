@@ -6,7 +6,7 @@ from KETIPreDataIngestion.quality.cycle.cycleData import CycleData
 
 
 def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, frequency=None):
-    from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
+    from KETIPrePartialDataPreprocessing.DataProcessing import DataPreprocessing
     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': frequency}}
     output_data = DataPreprocessing().get_refinedData(query_data, refine_param)
     cycleData = CycleData()
@@ -79,7 +79,7 @@ def getCycleSelectDataSet(query_data, feature_cycle, feature_cycle_times, freque
 
 #     test = db_client.get_data_by_time(start_time, end_time, db_name, ms_name)
 
-#     from KETIPrePartialDataPreprocessing.data_preprocessing import DataPreprocessing
+#     from KETIPrePartialDataPreprocessing.DataProcessing import DataPreprocessing
 #     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
 #     output_data = DataPreprocessing().get_refinedData(test, refine_param)
 

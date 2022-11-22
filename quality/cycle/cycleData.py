@@ -8,7 +8,7 @@ import math
 
 from sympy import sec
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from KETIPreDataIngestion.data_influx.influx_Client import influxClient
+from Clust.clust.ingestion.influx.influx_Client import influxClient
 
 
 class CycleData():
@@ -385,7 +385,7 @@ class CycleData():
 
 
 if __name__ == '__main__':
-    from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+    from Clust.setting import influx_setting_KETI as ins
 
     db_setting = influxClient(ins.CLUSTDataServer)
     # db_name="energy_wind_power"

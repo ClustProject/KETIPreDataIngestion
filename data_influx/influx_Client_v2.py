@@ -8,7 +8,7 @@ import os
 import pandas as pd
 from datetime import datetime
 
-#warnings.simplefilter("ignore", MissingPivotFunction)
+warnings.simplefilter("ignore", MissingPivotFunction)
 
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
 
@@ -859,7 +859,7 @@ f
 
 ## -------------------------------------- Influx Test --------------------------------------
 # if __name__ == "__main__":
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
+#     from Clust.setting import influx_setting_KETI as ins
 #     test = influxClient(ins.CLUSTDataServer2)
 #     db_name="air_indoor_아파트"
 #     ms_name="ICW0W2000781"

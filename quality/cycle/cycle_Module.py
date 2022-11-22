@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from KETIPreDataIngestion.transformation.dataByCycle.cycleData import CycleData
+from Clust.clust.transformation.dataByCycle.cycleData import CycleData
 
 
 def getCycleselectDataFrame(query_data, feature_cycle, feature_cycle_times, frequency=None):
@@ -53,8 +53,8 @@ def getCycleSelectDataSet(query_data, feature_cycle, feature_cycle_times, freque
 
 
 # if __name__ == '__main__':
-#     from KETIPreDataIngestion.KETI_setting import influx_setting_KETI as ins
-#     from KETIPreDataIngestion.data_influx.influx_Client import influxClient
+#     from Clust.setting import influx_setting_KETI as ins
+#     from Clust.clust.ingestion.influx.influx_Client import influxClient
 #     import pandas as pd
 
 #     db_client = influxClient(ins.CLUSTDataServer2)

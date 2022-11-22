@@ -1,6 +1,6 @@
 from doctest import DocFileCase
 import warnings
-#from influxdb_client.client.warnings import MissingPivotFunction
+from influxdb_client.client.warnings import MissingPivotFunction
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
 from influxdb_client import InfluxDBClient, Point, BucketsService, Bucket
 import sys

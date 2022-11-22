@@ -435,7 +435,7 @@ if __name__ == '__main__':
     # data_get = db_setting.get_data(db_name, ms_name)
 
     data_get = db_setting.get_data_by_time(start_time, end_time, db_name, ms_name)
-    from KETIPrePartialDataPreprocessing.DataProcessing import DataPreprocessing
+    from Clust.clust.preprocessing.DataProcessing import DataPreprocessing
     refine_param = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': None}}
     #refine_param2 = {'removeDuplication': {'flag': True}, 'staticFrequency': {'flag': True, 'frequency': "3H"}}
     output = DataPreprocessing().get_refinedData(data_get, refine_param)
